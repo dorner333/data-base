@@ -1,5 +1,4 @@
 #line 786 "hashdb.nw"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -9,11 +8,9 @@
 #include "hashdb.h"
 
 
-
 #define error(str, ...) fprintf(stderr, "[err] " str, ## __VA_ARGS__)
 #define log(str, ...)  {}
 //fprintf(stderr, "[log] " str, ##  __VA_ARGS__)
-
 #define MIN(a, b) ((a)<(b)? (a) : (b))
 
 #line 662 "hashdb.nw"
@@ -22,24 +19,19 @@
 #define CURRENT_VERSION 1
 
 #line 540 "hashdb.nw"
-
 struct _DB {
-    int fh; // Fie header
+    int fh;
     uint64_t (*hash)(const char*);
     uint64_t (*hash2)(const char*);
     Stat stat;
 };
-
 #line 38 "hashdb.nw"
-
 typedef struct _DHeader {
     char magic[4];
     uint32_t version;
     struct _Stat stat;
 } DHeader;
-
 #line 57 "hashdb.nw"
-
 typedef struct _THeader {
     char magic[4];
     uint32_t capacity;
@@ -48,9 +40,7 @@ typedef struct _THeader {
     uint16_t len;
     int64_t next;
 } THeader;
-
 #line 73 "hashdb.nw"
-
 typedef struct _Node {
     int64_t keyoff;
     uint64_t keysz;
@@ -158,7 +148,7 @@ typedef struct _Cursor {
  // N1->N3->N4->N5
  // N2
  // N5->N6->N7->N8 <<< cursor
-
+ // x
 
 #line 355 "hashdb.nw"
 int _file_cmp_block(int fh,  const char* key, size_t ks) {
@@ -181,22 +171,20 @@ int _file_cmp_block(int fh,  const char* key, size_t ks) {
     return 0;
 }
 #line 385 "hashdb.nw"
-int _file_append_block(int fh, const char* value, off_t* offset, size_t* size) { //Добавление блока в конец файла
+int _file_append_block(int fh, const char* value, off_t* offset, size_t* size) {
     *size = strlen(value) + 1;
     *offset = lseek(fh, 0, SEEK_END);
     //*offset = ftell(fh);
     return write(fh, value, *size) != *size;
 }
-
 #line 393 "hashdb.nw"
-int _file_append_node(int fh, Node* node, off_t* offset) {  //Добавление элемента в конец файла
+int _file_append_node(int fh, Node* node, off_t* offset) {
     *offset = lseek(fh, 0, SEEK_END);
     //*offset = ftell(fh);
     return write(fh, node, sizeof(Node)) != sizeof(Node);
 }
-
 #line 400 "hashdb.nw"
-int _file_append_table(int fh, size_t capacity, off_t* offset) { // Добавление таблицы
+int _file_append_table(int fh, size_t capacity, off_t* offset) {
     THeader th = (THeader){TABLE_MAGIC, capacity, 0, 0, 0};
     char buf[4096];
     size_t bytes = capacity*sizeof(Node);
@@ -213,10 +201,8 @@ int _file_append_table(int fh, size_t capacity, off_t* offset) { // Добавл
         if (write(fh, buf, bytes) != bytes) return -2;
     return 0;
 }
-
 #line 567 "hashdb.nw"
-
-int _file_check_magic(int fh) { // Просто проверка магии
+int _file_check_magic(int fh) {
     char magic[] = DB_MAGIC;
     char buf[4];
     lseek(fh, 0, SEEK_SET);
@@ -230,9 +216,7 @@ int _file_check_magic(int fh) { // Просто проверка магии
     }
     return 1;
 }
-
 #line 584 "hashdb.nw"
-
 int _file_write_header(int fh, size_t initial_capacity) {
     Stat stat = {0};
     stat.capacity = initial_capacity;
@@ -242,15 +226,13 @@ int _file_write_header(int fh, size_t initial_capacity) {
     if ( write(fh, &dh, sizeof(dh)) != sizeof(dh) ) return -1;
     return 0;
 }
-
 #line 596 "hashdb.nw"
 int _file_load_stat(int fh, Stat* stat) {
     lseek(fh, offsetof(DHeader, stat), SEEK_SET);
     return read(fh, stat, sizeof(Stat)) != sizeof(Stat);
 }
-
 #line 314 "hashdb.nw"
-int _cur_load_node(Cursor* cur) { //Загрузка элемента таблицы по курсору
+int _cur_load_node(Cursor* cur) {
     cur->len = 0;
     lseek(cur->fh, cur->nodeoff, SEEK_SET);
     if (read(cur->fh, &cur->node, sizeof(Node)) != sizeof(Node) ) {
@@ -263,7 +245,6 @@ int _cur_load_node(Cursor* cur) { //Загрузка элемента табли
     return 0;
 
 }
-
 #line 330 "hashdb.nw"
 int _cur_read_chain(Cursor* cur, off_t offset) {
     cur->prev = cur->chain;
@@ -279,21 +260,18 @@ int _cur_read_chain(Cursor* cur, off_t offset) {
         cur->idx, cur->chain.keyoff, cur->chain.keysz,
         cur->chain.valueoff, cur->chain.valuesz, cur->chain.next);
 }
-
 #line 347 "hashdb.nw"
 int _cur_read_table(Cursor* cur, off_t offset) {
     cur->tableoff = offset;
     lseek(cur->fh, cur->tableoff, SEEK_SET);
     return read(cur->fh, &cur->th, sizeof(THeader)) != sizeof(THeader);
 }
-
 #line 623 "hashdb.nw"
 int _cur_update_node(Cursor* cur) {
     lseek(cur->fh, cur->nodeoff, SEEK_SET);
     return write(cur->fh, &cur->node, sizeof(Node)) != sizeof(Node);
 
 }
-
 #line 638 "hashdb.nw"
 int _cur_update_chain(Cursor* cur) {
     lseek(cur->fh, cur->chainoff, SEEK_SET);
@@ -305,18 +283,18 @@ int _cur_update_prev(Cursor* cur) {
     return write(cur->fh, &cur->prev, sizeof(Node)) != sizeof(Node);
 }
 #line 645 "hashdb.nw"
-int _cur_update_table(Cursor* cur) { // Обновление заголовка таблицы после внесения изменений, связанных со статистикой
+int _cur_update_table(Cursor* cur) {
     if ( cur->len > cur->th.len ) cur->th.len = cur->len;
     lseek(cur->fh, cur->tableoff, SEEK_SET);
     return write(cur->fh, &cur->th, sizeof(THeader)) != sizeof(THeader);
 }
 #line 653 "hashdb.nw"
-int _cur_update_stat(Cursor* cur) { // Обновление структуры -- статистики всей базы данных
+int _cur_update_stat(Cursor* cur) {
     lseek(cur->fh, offsetof(DHeader, stat), SEEK_SET);
     return write(cur->fh, cur->stat, sizeof(Stat)) != sizeof(Stat);
 }
 #line 302 "hashdb.nw"
-int _cur_cmp_chain(Cursor* cur, const char* key) { // Побайтовое сравнение ключа
+int _cur_cmp_chain(Cursor* cur, const char* key) {
     size_t ks = strlen(key) + 1;
     log("Comparing key '%s' with cursor\n", key);
     if ( cur->chain.keysz != ks ) return 0;
@@ -324,9 +302,8 @@ int _cur_cmp_chain(Cursor* cur, const char* key) { // Побайтовое ср�
     lseek(cur->fh, cur->chain.keyoff, SEEK_SET);
     return _file_cmp_block(cur->fh, key, ks);
 }
-
 #line 250 "hashdb.nw"
-int _cur_find(Cursor* cur, const char* key) { // Проход по цепочке
+int _cur_find(Cursor* cur, const char* key) {
     if ( cur->chain.valueoff && _cur_cmp_chain(cur, key) ) return 1;
     if ( cur->chain.next ) {
         log("Reading next node at %ld\n", cur->chain.next);
@@ -335,13 +312,10 @@ int _cur_find(Cursor* cur, const char* key) { // Проход по цепочк�
     }
     return 0;
 }
-
 #line 264 "hashdb.nw"
-int _cur_search(Cursor* cur, const char* key) { // Либо ищем по ключу, либо ищем место для записи
-    cur->idx = cur->hash % cur->th.capacity; // индекс присвавиваем остатку хэша
-
+int _cur_search(Cursor* cur, const char* key) {
+    cur->idx = cur->hash % cur->th.capacity;
     log("Searching for key %s at table %ld idx %u\n", key, cur->tableoff, cur->idx);
-
     cur->nodeoff = cur->tableoff + sizeof(THeader) + sizeof(Node)*cur->idx;
     _cur_load_node(cur);
     cur->chainoff = cur->nodeoff;
@@ -349,45 +323,35 @@ int _cur_search(Cursor* cur, const char* key) { // Либо ищем по клю
     if(_cur_find(cur, key))
         return 1;
   //  cur->idx = cur->hash2 % cur->th.capacity;
-    // cur->nodeoff = cur->tableoff + sizeof(THeader) + sizeof(Node)*cur->idx;
-    // _cur_load_node(cur);
-    // cur->chainoff = cur->nodeoff;
-    // cur->chain = cur->node;
-    // if(_cur_find(cur, key))
-    //     return 1;
-
-
-    // if (cur->node->keyoff == 0)
-    // {
-    //
-    // }
-
+    cur->nodeoff = cur->tableoff + sizeof(THeader) + sizeof(Node)*cur->idx;
+    _cur_load_node(cur);
+    cur->chainoff = cur->nodeoff;
+    cur->chain = cur->node;
+    if(_cur_find(cur, key))
+        return 1;
     if ( cur->th.next ) {
         _cur_read_table(cur, cur->th.next);
         return _cur_search(cur, key);
     }
     return 0;
-
 }
-
-// #line 160 "hashdb.nw"
-// int _cur_write_chain(Cursor* cur, const char* key, const char* v) { //Дописывание в конец цепочки элементов новго элемента и пары ключ-значение
-//     Node new = {0};
-//     _file_append_block(cur->fh, key, &new.keyoff, &new.keysz);
-//     _file_append_block(cur->fh, v, &new.valueoff, &new.valuesz);
-//     _file_append_node(cur->fh, &new, &cur->chain.next);
-//     _cur_update_chain(cur);
-//     cur->th.size ++;
-//     cur->len++;
-//     _cur_update_table(cur);
-//     cur->stat->keysz += new.keysz;
-//     cur->stat->valuesz += new.valuesz;
-//     cur->stat->keys ++;
-//     if (cur->stat->maxlen < cur->len) cur->stat->maxlen = cur->len;
-//     _cur_update_stat(cur);
-//     return 0;
-// }
-
+#line 160 "hashdb.nw"
+int _cur_write_chain(Cursor* cur, const char* key, const char* v) {
+    Node new = {0};
+    _file_append_block(cur->fh, key, &new.keyoff, &new.keysz);
+    _file_append_block(cur->fh, v, &new.valueoff, &new.valuesz);
+    _file_append_node(cur->fh, &new, &cur->chain.next);
+    _cur_update_chain(cur);
+    cur->th.size ++;
+    cur->len++;
+    _cur_update_table(cur);
+    cur->stat->keysz += new.keysz;
+    cur->stat->valuesz += new.valuesz;
+    cur->stat->keys ++;
+    if (cur->stat->maxlen < cur->len) cur->stat->maxlen = cur->len;
+    _cur_update_stat(cur);
+    return 0;
+}
 #line 187 "hashdb.nw"
 int _cur_write_node(Cursor* cur, const char* key, const char* v) {
     _file_append_block(cur->fh, key, &cur->node.keyoff, &cur->node.keysz);
@@ -404,7 +368,7 @@ int _cur_write_node(Cursor* cur, const char* key, const char* v) {
     return 0;
 }
 #line 208 "hashdb.nw"
-int _cur_set_value(Cursor* cur, const char* value) {  // Обновление элемента по ключу
+int _cur_set_value(Cursor* cur, const char* value) {
     size_t oldsz = cur->chain.valuesz;
     _file_append_block(cur->fh, value, &cur->chain.valueoff, &cur->chain.valuesz);
     _cur_update_chain(cur);
@@ -412,12 +376,12 @@ int _cur_set_value(Cursor* cur, const char* value) {  // Обновление э
     _cur_update_stat(cur);
 }
 #line 223 "hashdb.nw"
-int _cur_del_node(Cursor* cur) { // Удаление элемента таблицы
-    if ( cur->nodeoff != cur->chainoff  ) { // nodeoff и chainoff должны совпадать
+int _cur_del_node(Cursor* cur) {
+    if ( cur->nodeoff != cur->chainoff  ) {
         cur->prev.next = cur->chain.next;
         _cur_update_prev(cur);
     } else {
-        cur->node.valueoff = 0; // Если совпадают, то смещение valueoff сделаем равным 0
+        cur->node.valueoff = 0;
         _cur_update_node(cur);
     }
     cur->th.size --;
@@ -426,9 +390,8 @@ int _cur_del_node(Cursor* cur) { // Удаление элемента табли
     cur->stat->keysz -= cur->node.keysz;
     _cur_update_stat(cur);
 }
-
-// #line 289 "hashdb.nw"
-int _ht_search(DB* db, Cursor* cur, const char* key) {  // Инициализация курсора
+#line 289 "hashdb.nw"
+int _ht_search(DB* db, Cursor* cur, const char* key) {
     memset(cur, 0, sizeof(Cursor));
     cur->stat = &db->stat;
     cur->fh = db->fh;
@@ -437,9 +400,8 @@ int _ht_search(DB* db, Cursor* cur, const char* key) {  // Инициализа�
     _cur_read_table(cur, (off_t)sizeof(DHeader));
     return _cur_search(cur, key);
 }
-
 #line 497 "hashdb.nw"
-DB* ht_open(const char* filename, size_t initial_capacity) { // Открытие хэщ-таблицы
+DB* ht_open(const char* filename, size_t initial_capacity) {
     DB* dbh;
     FILE* f = fopen(filename, "r");
     if ( f ) {
@@ -472,24 +434,22 @@ DB* ht_open(const char* filename, size_t initial_capacity) { // Открытие
     return dbh;
 }
 #line 549 "hashdb.nw"
-int ht_close(DB* db) { // Закрытие хэш-таблицы
+int ht_close(DB* db) {
     if( db ) {
         if (db->fh) close(db->fh);
         free(db);
     }
     return 0;
 }
-
-
 #line 436 "hashdb.nw"
-int ht_set(DB* db, const char* key, const char* value) { // Помещение пары ключ-значение в базу данных
-     Cursor cur;
+int ht_set(DB* db, const char* key, const char* value) {
+    Cursor cur;
     if ( _ht_search(db, &cur, key) )
         // элемент с нужным ключом найден -- обновляем значение
         return _cur_set_value(&cur, value);
     else {
         // элемент не найден
-        if ( cur.th.nodes*100 >= cur.th.capacity*67) {
+        if ( cur.th.nodes*100 >= cur.th.capacity*56) {
             // создаем новую таблицу, если текущая таблица переполнена
             error("Inserting table of size %u... when size=%u, nodes=%u, maxlen=%u ", cur.th.capacity*2+1, cur.th.size, cur.th.nodes, cur.th.len);
             _file_append_table(cur.fh, cur.th.capacity*2+1, &cur.th.next);
@@ -501,18 +461,14 @@ int ht_set(DB* db, const char* key, const char* value) { // Помещение �
             _cur_search(&cur, key);
             error("DONE\n");
         }
-        if (!cur.node.keyoff )
+        if ( cur.nodeoff == cur.chainoff && !cur.node.keyoff )
             return _cur_write_node(&cur, key, value);
-        else // ТУТ ДОБАВИТЬ ОТКРЫТУЮ АДРЕСАЦИЮ !!!
-          {
-            _cur_search(&cur, key);
-            _cur_write_node(&cur, key, value);
-          }
+        else
+            return _cur_write_chain(&cur, key, value);
     }
 }
-
 #line 464 "hashdb.nw"
-int ht_get(DB* db, const char* key, char** value) { // Получение значения по ключу
+int ht_get(DB* db, const char* key, char** value) {
     Cursor cur;
     if ( _ht_search(db, &cur, key) ) {
         *value = malloc(cur.chain.valuesz);
@@ -520,16 +476,15 @@ int ht_get(DB* db, const char* key, char** value) { // Получение зна
         if ( read(cur.fh, *value, cur.chain.valuesz) == cur.chain.valuesz ) {
             return 1;
         } else {
-            error("Cannot read %lu bytes for value at %ld\n", cur.chain.valuesz,
+            error("Cannod read %lu bytes for value at %ld\n", cur.chain.valuesz,
                 cur.chain.valueoff);
             return 0;
         }
     }
     return 0;
 }
-
 #line 482 "hashdb.nw"
-int ht_del(DB* db, const char* key) { //Удаление значения по ключу
+int ht_del(DB* db, const char* key) {
     Cursor cur;
     if ( _ht_search(db, &cur, key) ) {
         _cur_del_node(&cur);
@@ -538,7 +493,7 @@ int ht_del(DB* db, const char* key) { //Удаление значения по �
     return 0;
 }
 #line 532 "hashdb.nw"
-int ht_get_stat(DB* dbh, Stat* stat) { //
+int ht_get_stat(DB* dbh, Stat* stat) {
     *stat = dbh->stat;
     return 0;
 }

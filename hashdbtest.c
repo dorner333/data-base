@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "hashdb.h"
-#include <sys/time.h>
+
 int main(int argc, char* argv[]) {
     DB* dbh;
     char buf[4096];
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
                     printf("Setting '%s' = '%s'\n", key, val);
                     ht_set(dbh, key, val);
                     printf("OK\n");
-                } else
+                } else 
                     printf("No key or val given\n");
             } else if ( !strcmp(cmd, "GET")) {
                 char* key = strsep(&s, " \t\n");
@@ -66,18 +66,13 @@ int main(int argc, char* argv[]) {
                     stat.nodes,
                     stat.nodes/(float)stat.capacity,
                     stat.keys/(float)stat.nodes);
-            } else if ( !strcmp(cmd, "MASS")) {
+            } else if ( !strcmp(cmd, "MASS")) { 
                 char *start = strsep(&s, " \t\n");
                 char *count = strsep(&s, " \t\n");
                 if (start && count) {
                     int i;
                     int st = atoi(start);
                     int cnt = atoi(count);
-
-                    struct timeval start;
-                    struct timeval end;
-                    gettimeofday(&start, NULL);
-
                     printf("Starting set from %d to %d\n", st, st+cnt);
                     for ( i = st; i<= st+cnt; i++) {
                         char key[100];
@@ -86,11 +81,8 @@ int main(int argc, char* argv[]) {
                         snprintf(value, 100, "value%d", i);
                         ht_set(dbh, key, value);
                     }
-                    gettimeofday(&end, NULL);
-                    int alpha = 1000000;
-                    double delta = end.tv_usec - start.tv_usec;
-                    printf("Done %lg sec, %f entries/sec\n", ((end.tv_sec - start.tv_sec)*alpha + delta) / alpha, (float)(cnt + 1)/(end.tv_sec - start.tv_sec));
-                }
+                    printf("Done\n");
+                } 
 
             } else if ( !strcmp(cmd, "QUIT") || !strcmp(cmd, "EXIT")) {
                 break;
