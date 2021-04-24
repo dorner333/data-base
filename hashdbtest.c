@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include "hashdb.h"
 
+// для дебага тестов
+#define DEBUG
+
 int main(int argc, char* argv[])
 {
     DB* dbh;
@@ -92,6 +95,15 @@ int main(int argc, char* argv[])
                     int st = atoi(start);
                     int cnt = atoi(count);
                     printf("Starting set from %d to %d\n", st, st+cnt);
+
+                    //Определяем текущее время
+                    clock_gettime(CLOCK_REALTIME, &mt1);
+                    #ifdef DEBUG
+                    //Выводим определенное время на экран консоли
+                    printf ("seconds: %ld\n", mt1.tv_sec);
+                    printf ("nano seconds: %ld\n", mt1.tv_nsec);
+                    #endif
+
                     for ( i = st; i<= st+cnt; i++)
                     {
                         char key[100];
@@ -101,6 +113,17 @@ int main(int argc, char* argv[])
                         ht_set(dbh, key, value);
                     }
                     printf("Done\n");
+
+                    //Определяем текущее время
+                    clock_gettime (CLOCK_REALTIME, &mt2);
+                    //Рассчитываем разницу времени между двумя измерениями
+                    long long ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
+                    int simple_time = (int) ftime / cnt;
+                    printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+                    printf("TIME DUMP\n");
+                    printf("ht_set function real time: %lld nanosecons\n", ftime);
+                    printf("time to set one pair k-v: %d nanoseconds\n", simple_time);
+                    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                 }
 
             }
