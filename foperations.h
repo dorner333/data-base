@@ -1,4 +1,11 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
+#include <unistd.h>
 
+#include "hashdb.h"
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 int _file_cmp_block(int fh,  const char* key, size_t ks) //побайтовое равнение блоков
