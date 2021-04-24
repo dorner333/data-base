@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "hashdb.h"
-
+  
 int main(int argc, char* argv[])
 {
     DB* dbh = {};
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
             {
                 break;
             }
-            else 
+            else
             {
                 printf("unknown command\n");
             }

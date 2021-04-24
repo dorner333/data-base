@@ -1,6 +1,6 @@
 #ifndef _HASHDB_H_
 #define _HASHDB_H_
-
+  
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

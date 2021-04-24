@@ -1,5 +1,5 @@
 #include "hashdb.h"
-
+  
 struct _DB {
     int fh; // файл бд
     uint64_t (*hash)(const char*);
