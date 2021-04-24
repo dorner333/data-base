@@ -1,12 +1,11 @@
-#line 827 "hashdb.nw"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include "hashdb.h"
-  
+
 int main(int argc, char* argv[])
 {
-    DB* dbh = {};
+    DB* dbh;
     char buf[4096] = {};
     if (argc < 2)
     {

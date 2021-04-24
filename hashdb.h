@@ -1,6 +1,6 @@
 #ifndef _HASHDB_H_
 #define _HASHDB_H_
-  
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,12 +28,12 @@ typedef struct _Stat {
     uint64_t nodes; // Количество элементов (узлов)
 } Stat;
 
-struct _DB {
+typedef struct _DB {
     int fh; // сам файл
     uint64_t (*hash)(const char*);
     uint64_t (*hash2)(const char*);
     Stat stat; // Статистика таблицы
-};
+} DB;
 
 
 typedef struct _DHeader { // Заголовок базы данных
@@ -63,13 +63,10 @@ typedef struct _Node { // Структура самого элемента та�
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 DB* ht_open(const char* filename, size_t initial_capacity);
-
 int ht_set(DB* dbh, const char* key, const char* value);
 int ht_get(DB* dbh, const char* key, char** value);
 int ht_del(DB* dbh, const char* key);
-
 int ht_close(DB* dbh);
-
 int ht_get_stat(DB* dbh, Stat* stat);
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_

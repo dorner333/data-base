@@ -1,36 +1,113 @@
 #include "hashdb.h"
-  
-struct _DB {
-    int fh; // файл бд
-    uint64_t (*hash)(const char*);
-    uint64_t (*hash2)(const char*);
-    Stat stat; // Статистика БД
-};
 
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
-typedef struct _DHeader { // Заголовок базы данных
-    char magic[4]; // Магическая последовательность - информация о бд
-    uint32_t version; // Текущая версия (если формат бд будет менятьсф)
-    struct _Stat stat; // Статистика (определена в хедере)
-} DHeader;
+int _file_cmp_block(int fh,  const char* key, size_t ks) //побайтовое равнение блоков
+{
+    char buf[4096] = {};
+    size_t bytes = 0;
+    if ( ks == 0 ) {
+        log("Keys are equal\n");
+        return 1;
+    }
+    bytes = MIN(4096, ks);
+    log("Reading %lu bytes\n", bytes);
+    bytes = read(fh, buf,  MIN(4096, ks)); // Считываем из файла fh MIN(4096, ks) байтов в буфер
+    log("Comparing %lu bytes of key blocks '%.4s' and '%.4s'...\n", bytes, buf, key);
+    if ( memcmp(buf, key, MIN(bytes, ks)) == 0 ) {
+        log("Chunks are equal\n");
+        return _file_cmp_block(fh, key+ks, ks-bytes);
 
-typedef struct _THeader { // Заголовок текущей таблицы
-    char magic[4]; /// Информация о таблице
-    uint32_t capacity; //Общая емкость таблицы
-    uint32_t size; // Текущий разер таблицы
-    uint32_t nodes; // Количество узлов
-    uint16_t len;
-    int64_t next; // Указатель на следующую таблицу
-} THeader;
+    }
+    log("Chunks are not equal\n");
+    return 0;
+}
 
-// Если элемент таблицы пустой то keyoff = 0
-typedef struct _Node { // Структура самого элемента таблицы
-    int64_t keyoff; // Смещегние ключа
-    uint64_t keysz; // Размер ключа
-    int64_t valueoff; //смещение значения
-    uint64_t valuesz; // размер значения
-    int64_t next; // указатель на следующий элемент
-} Node;
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+// Добавление блока в конец файла
+int _file_append_block(int fh, const char* value, off_t* offset, size_t* size)
+{
+    *size = strlen(value) + 1; // Вычисляем размер значения
+    *offset = lseek(fh, 0, SEEK_END);
+    //*offset = ftell(fh);
+    return write(fh, value, *size) != *size; // Записывает *size байт из value в файл fh
+}
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+// Добавление элемента в конец файла
+int _file_append_node(int fh, Node* node, off_t* offset)
+{
+    *offset = lseek(fh, 0, SEEK_END);
+    //*offset = ftell(fh);
+    return write(fh, node, sizeof(Node)) != sizeof(Node);
+}
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+//Добавление таблицы в конец файла
+int _file_append_table(int fh, size_t capacity, off_t* offset)
+{
+    THeader th = (THeader){TABLE_MAGIC, capacity, 0, 0, 0, 0}; // ! в инициализации было 5 переменных !
+    char buf[4096];
+    size_t bytes = capacity*sizeof(Node);
+    int i = 0;
+    memset(buf, 0, sizeof(buf));
+    *offset = lseek(fh, 0, SEEK_END); // Находим длину файла
+    //*offset = ftell(fh);
+    if (write(fh, &th, sizeof(th)) != sizeof(th)) return -1; // Запись в файл fh sizeof(th) байтов из th
+    for (i = 0; i < bytes/sizeof(buf); i++ ) {
+        if (write(fh, buf, sizeof(buf)) != sizeof(buf)) return -2; // Тоже запись в файл
+    }
+    bytes = bytes % sizeof(buf);
+    if ( bytes  > 0)
+        if (write(fh, buf, bytes) != bytes) return -2; // И тоже запись в файл
+    return 0;
+}
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+int _file_check_magic(int fh) // Проверка магии файла
+{
+    char magic[] = DB_MAGIC;
+    char buf[4];
+    lseek(fh, 0, SEEK_SET);
+
+    if (read(fh, buf, 4) != 4 ) // Читаем первые 4 байта из файла в buf
+    {
+        error("Cannot read magic\n");
+        return 0;
+    }
+
+    if ( memcmp(magic, buf, 4) )  // Сранивает по 4 байта из magic и из buf
+    {
+        error("Wrong magic\n");
+        return 0;
+    }
+    return 1;
+}
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+int _file_write_header(int fh, size_t initial_capacity) // Запись названия файла
+{
+    Stat stat = {0}; // Обнуляем статистику
+    stat.capacity = initial_capacity;
+    stat.tables = 1; // делаем первую таблицу
+    DHeader dh = (DHeader){DB_MAGIC, CURRENT_VERSION, stat};  //  Инициализируем заголовок базы данных
+    lseek(fh, 0, SEEK_SET);
+    if ( write(fh, &dh, sizeof(dh)) != sizeof(dh) ) return -1; // Запись в файл fh sizeof(dh) байт из файла &dh
+    return 0;
+}
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+int _file_load_stat(int fh, Stat* stat)
+{
+    lseek(fh, offsetof(DHeader, stat), SEEK_SET); //  Передвигаем указатель в файле fh на положение offsetof(DHeader, stat) во всем файле
+    return read(fh, stat, sizeof(Stat)) != sizeof(Stat); // Читает sizeof(Stat) байтов из stat. Read возвращает количнество считанных байт.
+}
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 // static - функция видна только этому объектному файлу
@@ -124,7 +201,7 @@ typedef struct _Cursor { // Для поиска элемента, сохраня
     int idx; // индекс текущего элемента в таблице
     Node node; // текущий элемент
     off_t nodeoff; // смещение текущего элеменьа
-    Node chain; // текущий элемент списка
+    Node chain; // текущий элемент цепочки
     off_t chainoff; // Смещение текущего элемента внутри файла
     Node prev; // Предыдущий прочитанный элемент
     off_t prevoff; // Смещение предыдущего прочитанного элеменат
