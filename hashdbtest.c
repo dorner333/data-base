@@ -4,10 +4,12 @@
 #include <stdlib.h>
 #include "hashdb.h"
 
-int main(int argc, char* argv[]) {
-    DB* dbh;
-    char buf[4096];
-    if (argc < 2) {
+int main(int argc, char* argv[])
+{
+    DB* dbh = {};
+    char buf[4096] = {};
+    if (argc < 2)
+    {
         printf("usage: %s <dbfilename>\n", argv[0]);
         exit(1);
     }
@@ -16,37 +18,51 @@ int main(int argc, char* argv[]) {
         printf("Cannot open database %s\n", argv[1]);
         exit(1);
     }
-    while(fgets(buf, 4096, stdin)) {
+    while(fgets(buf, 4096, stdin))
+    {
         char*s = buf;
         char* cmd = strsep(&s, " \t\n");
         if ( cmd ) {
-            if (!strcmp(cmd, "SET")) {
+            if (!strcmp(cmd, "SET"))
+            {
                 char* key = strsep(&s, " \t\n");
                 char* val = strsep(&s, "\n");
-                if (key && val) {
+                if (key && val)
+                {
                     printf("Setting '%s' = '%s'\n", key, val);
                     ht_set(dbh, key, val);
                     printf("OK\n");
-                } else 
+                }
+                else
                     printf("No key or val given\n");
-            } else if ( !strcmp(cmd, "GET")) {
+            }
+            else if ( !strcmp(cmd, "GET"))
+            {
                 char* key = strsep(&s, " \t\n");
-                if ( key ) {
+                if ( key )
+                {
                     char* val;
-                    if ( ht_get(dbh, key, &val) ) {
+                    if ( ht_get(dbh, key, &val) )
+                    {
                         printf("%s\n", val);
                         free(val);
-                    } else {
+                    } else
+                    {
                         printf("No such key\n");
                     }
                 }
-            } else if ( !strcmp(cmd, "DEL")) {
+            }
+            else if ( !strcmp(cmd, "DEL"))
+            {
                 char* key = strsep(&s, " \t\n");
-                if ( key ) {
+                if ( key )
+                {
                     ht_del(dbh, key);
                     printf("OK\n");
                 }
-            } else if ( !strcmp(cmd, "STAT")) {
+            }
+            else if ( !strcmp(cmd, "STAT"))
+            {
                 Stat stat;
                 ht_get_stat(dbh, &stat);
                 printf("Keys: %lu\n tables: %u\nAvg. key size: %f\n"
@@ -66,15 +82,19 @@ int main(int argc, char* argv[]) {
                     stat.nodes,
                     stat.nodes/(float)stat.capacity,
                     stat.keys/(float)stat.nodes);
-            } else if ( !strcmp(cmd, "MASS")) { 
+            }
+            else if ( !strcmp(cmd, "MASS"))
+            {
                 char *start = strsep(&s, " \t\n");
                 char *count = strsep(&s, " \t\n");
-                if (start && count) {
+                if (start && count)
+                {
                     int i;
                     int st = atoi(start);
                     int cnt = atoi(count);
                     printf("Starting set from %d to %d\n", st, st+cnt);
-                    for ( i = st; i<= st+cnt; i++) {
+                    for ( i = st; i<= st+cnt; i++)
+                    {
                         char key[100];
                         char value[100];
                         snprintf(key, 100, "key%d", i);
@@ -82,11 +102,15 @@ int main(int argc, char* argv[]) {
                         ht_set(dbh, key, value);
                     }
                     printf("Done\n");
-                } 
+                }
 
-            } else if ( !strcmp(cmd, "QUIT") || !strcmp(cmd, "EXIT")) {
+            }
+            else if ( !strcmp(cmd, "QUIT") || !strcmp(cmd, "EXIT"))
+            {
                 break;
-            } else {
+            }
+            else 
+            {
                 printf("unknown command\n");
             }
         }
