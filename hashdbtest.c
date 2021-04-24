@@ -13,10 +13,13 @@ int main(int argc, char* argv[])
         exit(1);
     }
     dbh = ht_open(argv[1], 141307);
-    if ( !dbh ) {
+
+    if ( !dbh )
+    {
         printf("Cannot open database %s\n", argv[1]);
         exit(1);
     }
+    
     while(fgets(buf, 4096, stdin))
     {
         char*s = buf;
