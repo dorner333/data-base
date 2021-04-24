@@ -4,7 +4,7 @@
 #include "hashdb.h"
 
 // для дебага тестов
-#define DEBUG
+//#define DEBUG
 
 int main(int argc, char* argv[])
 {
@@ -23,6 +23,19 @@ int main(int argc, char* argv[])
         printf("Cannot open database %s\n", argv[1]);
         exit(1);
     }
+
+    // simple menu
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    printf("Choose an action:\n\n");
+
+    printf("Exit or QUIT            -- to exit\n");
+    printf("MASS /*sart*/ /*count*/ -- to fill data base by values\n");
+    printf("SET /*key*/             -- to set value by key\n");
+    printf("GET /**/                -- to set value by key\n");
+    printf("STAT                    -- to get a data base statistic\n");
+    printf("DEL /*key*/             -- to delite value by key\n\n");
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     while(fgets(buf, 4096, stdin))
     {
         char*s = buf;
@@ -192,3 +205,5 @@ int main(int argc, char* argv[])
 //TODO: Паша
 //* добавил подсчет времени работы функции ht_set
 //* добавил подсчет времени работы функции ht_get
+//* добавил подсчет времени работы функции DEl
+//* добавил вывод менюшки действий при запуске
