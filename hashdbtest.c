@@ -10,6 +10,9 @@ int main(int argc, char* argv[])
 {
     DB* dbh;
     char buf[4096] = {};
+    long long ftime = 0;
+    long long simple_time = 0;
+
     if (argc < 2)
     {
         printf("usage: %s <dbfilename>\n", argv[0]);
@@ -40,6 +43,15 @@ int main(int argc, char* argv[])
             }
             else if ( !strcmp(cmd, "GET"))
             {
+
+                //Определяем текущее время
+                clock_gettime(CLOCK_REALTIME, &mt1);
+                #ifdef DEBUG
+                //Выводим определенное время на экран консоли
+                printf ("seconds: %ld\n", mt1.tv_sec);
+                printf ("nano seconds: %ld\n", mt1.tv_nsec);
+                #endif
+
                 char* key = strsep(&s, " \t\n");
                 if ( key )
                 {
@@ -53,21 +65,49 @@ int main(int argc, char* argv[])
                         printf("No such key\n");
                     }
                 }
+
+                //Определяем текущее время
+                clock_gettime (CLOCK_REALTIME, &mt2);
+                //Рассчитываем разницу времени между двумя измерениями
+                ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
+                printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+                printf("TIME DUMP [HT_GET]\n");
+                printf("ht_get function real time: %lld nanosecons\n", ftime);
+                printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
             }
             else if ( !strcmp(cmd, "DEL"))
             {
                 char* key = strsep(&s, " \t\n");
+
+                //Определяем текущее время
+                clock_gettime(CLOCK_REALTIME, &mt1);
+                #ifdef DEBUG
+                //Выводим определенное время на экран консоли
+                printf ("seconds: %ld\n", mt1.tv_sec);
+                printf ("nano seconds: %ld\n", mt1.tv_nsec);
+                #endif
+
                 if ( key )
                 {
                     ht_del(dbh, key);
                     printf("OK\n");
                 }
+
+                //Определяем текущее время
+                clock_gettime (CLOCK_REALTIME, &mt2);
+                //Рассчитываем разницу времени между двумя измерениями
+                ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
+                printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+                printf("TIME DUMP [HT_DEL]\n");
+                printf("ht_del function real time: %lld nanosecons\n", ftime);
+                printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+
             }
             else if ( !strcmp(cmd, "STAT"))
             {
                 Stat stat;
                 ht_get_stat(dbh, &stat);
-                printf("Keys: %lu\n tables: %u\nAvg. key size: %f\n"
+                printf("Keys: %lu\ntables: %u\nAvg. key size: %f\n"
                     "Avg. value size: %f\n"
                     "Total capacity: %lu\n"
                     "Avg. Fill factor: %f\n"
@@ -116,13 +156,18 @@ int main(int argc, char* argv[])
 
                     //Определяем текущее время
                     clock_gettime (CLOCK_REALTIME, &mt2);
+                    #ifdef DEBUG
+                    //Выводим определенное время на экран консоли
+                    printf ("seconds: %ld\n", mt2.tv_sec);
+                    printf ("nano seconds: %ld\n", mt2.tv_nsec);
+                    #endif
                     //Рассчитываем разницу времени между двумя измерениями
-                    long long ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
-                    int simple_time = (int) ftime / cnt;
+                    ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
+                    simple_time = ftime / cnt; //!!!
                     printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-                    printf("TIME DUMP\n");
+                    printf("TIME DUMP [HT_SET]\n");
                     printf("ht_set function real time: %lld nanosecons\n", ftime);
-                    printf("time to set one pair k-v: %d nanoseconds\n", simple_time);
+                    printf("time to set one pair k-v: %lld nanoseconds\n", simple_time);
                     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                 }
 
@@ -140,3 +185,10 @@ int main(int argc, char* argv[])
     ht_close(dbh);
     return 0;
 }
+
+//! WARNIN: при использовании функции MASS программа начинает выдавать [err] на значении счетчика 170000
+//! ввести 1000000 за раз я так и не смог (не дождался)
+
+//TODO: Паша
+//* добавил подсчет времени работы функции ht_set
+//* добавил подсчет времени работы функции ht_get

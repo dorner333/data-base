@@ -438,8 +438,8 @@ int _ht_search(DB* db, Cursor* cur, const char* key) // Инициализаци
     memset(cur, 0, sizeof(Cursor)); // Обнуление курсора
     cur->stat = &db->stat;
     cur->fh = db->fh;
-   cur->hash = db->hash(key);
-  //  cur->hash2 = db->hash2(key);
+    cur->hash = db->hash(key);
+    //  cur->hash2 = db->hash2(key);
     _cur_read_table(cur, (off_t)sizeof(DHeader)); // Считываем саму табличку
     return _cur_search(cur, key); // Ищем с помощью курсора
 }
