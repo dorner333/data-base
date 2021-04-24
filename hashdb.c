@@ -449,15 +449,19 @@ int _ht_search(DB* db, Cursor* cur, const char* key) // Инициализаци
 DB* ht_open(const char* filename, size_t initial_capacity)  // Открытие файла базы данных
 {
     DB* dbh;
-    FILE* f = fopen(filename, "r");
-    if ( f ) {
+    FILE* f = fopen(filename, "a+t");
+    if ( f )
+    {
         if (_file_check_magic(fileno(f))) {
             f = freopen(NULL, "r+", f);
         } else {
             error("Wrong magic file %s\n", filename);
             return NULL;
         }
-    } else {
+    }
+
+    else
+    {
         off_t first_table_offset;
         f = fopen(filename, "w+");
         if ( !f ) {
@@ -467,7 +471,8 @@ DB* ht_open(const char* filename, size_t initial_capacity)  // Открытие 
         _file_write_header(fileno(f), initial_capacity);
         _file_append_table(fileno(f), initial_capacity, &first_table_offset);
     }
-    if ( !f ) {
+    if ( !f )
+    {
         error("Cannot open file %s\n", filename);
         return NULL;
     }
