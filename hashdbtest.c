@@ -5,6 +5,8 @@
 
 // для дебага тестов
 //#define DEBUG
+// режим эксперемента
+#define STAT
 
 int main(int argc, char* argv[])
 {
@@ -12,6 +14,10 @@ int main(int argc, char* argv[])
     char buf[4096] = {};
     long long ftime = 0;
     long long simple_time = 0;
+
+    #ifdef STAT
+    FILE* data = fopen("data.txt", "w");
+    #endif
 
     if (argc < 2)
     {
@@ -83,10 +89,15 @@ int main(int argc, char* argv[])
                 clock_gettime (CLOCK_REALTIME, &mt2);
                 //Рассчитываем разницу времени между двумя измерениями
                 ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
+
+                #ifndef STAT
                 printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                 printf("TIME DUMP [HT_GET]\n");
                 printf("ht_get function real time: %lld nanosecons\n", ftime);
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+                #else
+                fprintf(data, "%lld\t", ftime);
+                #endif
             }
             else if ( !strcmp(cmd, "DEL"))
             {
@@ -110,10 +121,15 @@ int main(int argc, char* argv[])
                 clock_gettime (CLOCK_REALTIME, &mt2);
                 //Рассчитываем разницу времени между двумя измерениями
                 ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
+
+                #ifndef STAT
                 printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                 printf("TIME DUMP [HT_DEL]\n");
                 printf("ht_del function real time: %lld nanosecons\n", ftime);
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+                #else
+                fprintf(data, "%lld\t", ftime);
+                #endif
 
             }
             else if ( !strcmp(cmd, "STAT"))
@@ -176,12 +192,17 @@ int main(int argc, char* argv[])
                     #endif
                     //Рассчитываем разницу времени между двумя измерениями
                     ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
-                    simple_time = ftime / cnt; //!!!
+                    simple_time = ftime / cnt;
+
+                    #ifndef STAT
                     printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                     printf("TIME DUMP [HT_SET]\n");
                     printf("ht_set function real time: %lld nanosecons\n", ftime);
                     printf("time to set one pair k-v: %lld nanoseconds\n", simple_time);
                     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+                    #else
+                    fprintf(data, "%lld\t", simple_time);
+                    #endif
                 }
 
             }
@@ -196,6 +217,13 @@ int main(int argc, char* argv[])
         }
     }
     ht_close(dbh);
+
+    #ifdef STAT
+    fprintf(data, "\n");
+    fclose(data);
+    #else
+    #endif
+    
     return 0;
 }
 
