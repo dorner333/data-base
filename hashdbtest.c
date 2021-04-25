@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
     long long simple_time = 0;
 
     #ifdef STAT
-    FILE* data = fopen("data.txt", "w");
+    FILE* data = fopen("data.txt", "a");
     #endif
 
     if (argc < 2)
@@ -97,6 +97,7 @@ int main(int argc, char* argv[])
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                 #else
                 fprintf(data, "%lld\t", ftime);
+                sleep(1);
                 #endif
             }
             else if ( !strcmp(cmd, "DEL"))
@@ -129,6 +130,7 @@ int main(int argc, char* argv[])
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                 #else
                 fprintf(data, "%lld\t", ftime);
+                sleep(1);
                 #endif
 
             }
@@ -202,6 +204,7 @@ int main(int argc, char* argv[])
                     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                     #else
                     fprintf(data, "%lld\t", simple_time);
+                    sleep(3);
                     #endif
                 }
 
@@ -221,8 +224,7 @@ int main(int argc, char* argv[])
     #ifdef STAT
     fprintf(data, "\n");
     fclose(data);
-    #else
-    #endif
+    #endif 
     
     return 0;
 }

@@ -2,5 +2,5 @@ hashs.h
 *.o
 *.exe
 hashdbtest
-test
 callgrind.out.*
+data.txt
