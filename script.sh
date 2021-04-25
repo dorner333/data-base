@@ -6,7 +6,7 @@ echo "test"
 rm data.txt
 
 # запускаем цикл
-for ((i = 1; i <= 10; i++))
+for ((i = 1; i <= 10000; i++))
 do
 # пишем команды в файл commands.txt
 printf "MASS 0 $i\nGET key$i\nDEL key$i\n" > commands.txt
@@ -16,4 +16,5 @@ done
 
 # удаляем файл с базой
 rm new
+rm commands
 echo "end"

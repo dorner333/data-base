@@ -32,6 +32,7 @@ int main(int argc, char* argv[])
 
     // simple menu
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #ifndef STAT
     printf("Choose an action:\n\n");
 
     printf("Exit or QUIT            -- to exit\n");
@@ -40,6 +41,7 @@ int main(int argc, char* argv[])
     printf("GET /**/                -- to set value by key\n");
     printf("STAT                    -- to get a data base statistic\n");
     printf("DEL /*key*/             -- to delite value by key\n\n");
+    #endif
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     while(fgets(buf, 4096, stdin))
@@ -96,7 +98,7 @@ int main(int argc, char* argv[])
                 printf("ht_get function real time: %lld nanosecons\n", ftime);
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                 #else
-                fprintf(data, "%lld\t", ftime);
+                fprintf(data, "%lld ", ftime);
                 sleep(1);
                 #endif
             }
@@ -129,7 +131,7 @@ int main(int argc, char* argv[])
                 printf("ht_del function real time: %lld nanosecons\n", ftime);
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                 #else
-                fprintf(data, "%lld\t", ftime);
+                fprintf(data, "%lld ", ftime);
                 sleep(1);
                 #endif
 
@@ -203,7 +205,7 @@ int main(int argc, char* argv[])
                     printf("time to set one pair k-v: %lld nanoseconds\n", simple_time);
                     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                     #else
-                    fprintf(data, "%lld\t", simple_time);
+                    fprintf(data, "%lld ", simple_time);
                     sleep(3);
                     #endif
                 }
