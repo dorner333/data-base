@@ -1,4 +1,0 @@
-MASS 0 1000
-GET key500
-DEL key1000
-EXIT
