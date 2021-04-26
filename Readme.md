@@ -25,8 +25,8 @@ make profile
 Для профилироваия и визуализации результатов используем valgrind, callgrind и kcachegrind, для построения графиков используем gnuplot.
 ![Профилирование](https://github.com/ksartamonov/data-base/blob/stat/pictures/testing.png)
 Построим график зависимости времени вставки, от количества ключей в базе. Как видно, в приближении время вставки пропорционально количеству ключей.
-![График 1](https://github.com/ksartamonov/data-base/blob/stat/pictures/plot1.jpg)
+![График 1](\pictures\testplot(set).png)
 Построим графики зависимости времени поиска и удаления элемента по ключу от количества ключей.
-![График 2](https://github.com/ksartamonov/data-base/blob/stat/pictures/plot2.jpg)
+![График 2](\pictures\testplot(get).png)
 В приближении можно сказать, что обе операции выполняются за константное время, независимо от количества ключей в таблице.
-![График 3](https://github.com/ksartamonov/data-base/blob/stat/pictures/plot3.jpg)
+![График 3](\pictures\testplot(del).png)
