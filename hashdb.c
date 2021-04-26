@@ -273,7 +273,7 @@ int _cur_cmp(Cursor* cur, const char* key) // Сравнение ключа
 
 int _cur_search(Cursor* cur, const char* key, int mode) // Поиск элемента по ключу
 {
-    if ( mode == _DEFAULT_)
+    if ( mode == _DEFAULT_ )
     {
       cur->idx = cur->hash % cur->th.capacity; // По значению хэш функции определяем индекс в таблице
     log("Searching for key %s at table %ld idx %u\n", key, cur->tableoff, cur->idx);
@@ -286,13 +286,19 @@ int _cur_search(Cursor* cur, const char* key, int mode) // Поиск элеме
     if ( _cur_cmp(cur, key) && cur->node.valueoff )
       return 1; // Если нашли возвращаемся
 
-    if ( mode == SEARCHING_FREE)
+    if ( mode == SEARCHING_FREE )
     {
-      while (cur->node.keyoff && (cur->idx) < (cur->th.capacity))
+      int NumOfIterations = 0;
+      while ((cur->idx) < (cur->th.capacity) && NumOfIterations < (cur->th.capacity))
       {
-        _cur_load_node(cur);
+        if ( !cur->node.keyoff && _cur_cmp(cur, key) );
+          return 1; // Если нашли возвращаемся
+
         cur->idx++;
         cur->nodeoff = cur->tableoff + sizeof(THeader) + sizeof(Node)*cur->idx;
+        _cur_load_node(cur);
+
+        NumOfIterations++;
       }
       return 1;
     }
@@ -445,7 +451,7 @@ int ht_set(DB* db, const char* key, const char* value)  //  Установка �
         if ( !cur.node.keyoff ) // Если место свободно, то записываем
           return _cur_write_node(&cur, key, value);
 
-        else
+        else // Если коллизия
         {
           _cur_search(&cur, key, SEARCHING_FREE);
           return _cur_write_node(&cur, key, value);
