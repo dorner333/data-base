@@ -290,7 +290,6 @@ int _cur_search(Cursor* cur, const char* key, int mode) // Поиск элеме
     {
       while (cur->node.keyoff && (cur->idx) < (cur->th.capacity))
       {
-        //printf("IDX = %d\n", cur->idx);
         _cur_load_node(cur);
         cur->idx++;
         cur->nodeoff = cur->tableoff + sizeof(THeader) + sizeof(Node)*cur->idx;
