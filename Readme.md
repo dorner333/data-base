@@ -16,7 +16,7 @@ make details
 time ./hashdbtest <filename>
 ```
 
-# Профидирование и тесты
+# Профилирование и тесты
 Запуск с профилированием
 ```
 make details
