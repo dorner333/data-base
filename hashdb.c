@@ -289,12 +289,12 @@ int _cur_search(Cursor* cur, const char* key, int mode) // Поиск элеме
     if ( mode == SEARCHING_FREE )
     {
       int NumOfIterations = 0;
-      while ((cur->idx) < (cur->th.capacity) && NumOfIterations < (cur->th.capacity))
+      while (NumOfIterations < (cur->th.capacity))
       {
         if ( !cur->node.keyoff && _cur_cmp(cur, key) );
           return 1; // Если нашли возвращаемся
 
-        cur->idx++;
+        cur->idx = (cur->idx + 1) % cur->th.capacity;
         cur->nodeoff = cur->tableoff + sizeof(THeader) + sizeof(Node)*cur->idx;
         _cur_load_node(cur);
 
@@ -312,8 +312,6 @@ int _cur_search(Cursor* cur, const char* key, int mode) // Поиск элеме
     return 0;
 }
 
-//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-// ! QUESTION:   _cur_update_node  делает то же, что и _file_append_block  !
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 int _cur_write_node(Cursor* cur, const char* key, const char* v)  // (см. функцию выше) Запись в таблицу пары ключ-значение
