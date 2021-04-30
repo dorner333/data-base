@@ -6,7 +6,7 @@
 // для дебага тестов
 //#define DEBUG
 // режим эксперемента
-#define STAT
+//#define STAT
 
 int main(int argc, char* argv[])
 {
@@ -142,23 +142,31 @@ int main(int argc, char* argv[])
             {
                 Stat stat;
                 ht_get_stat(dbh, &stat);
-                printf("Keys: %lu\ntables: %u\nAvg. key size: %f\n"
-                    "Avg. value size: %f\n"
-                    "Total capacity: %lu\n"
-                    "Avg. Fill factor: %f\n"
-                    "Max chain length: %u\n"
-                    "Filled nodes: %lu\n"
-                    "Node fill factor: %f\n"
-                    "Avg chain length: %f\n",
-                    stat.keys, stat.tables,
-                    stat.keysz/(float)stat.keys,
-                    stat.valuesz/(float)stat.keys,
-                    stat.capacity,
-                    stat.keys/(float)stat.capacity,
-                    stat.maxlen,
-                    stat.nodes,
-                    stat.nodes/(float)stat.capacity,
-                    stat.keys/(float)stat.nodes);
+                #ifndef STAT
+                    printf("Keys: %lu\n"
+                        "tables: %u\n"
+                        "Avg. key size: %f\n"
+                        "Avg. value size: %f\n"
+                        "Total capacity: %lu\n"
+                        "Avg. Fill factor: %f\n"
+                        "Max chain length: %u\n"
+                        "Filled nodes: %lu\n"
+                        "Node fill factor: %f\n"
+                        "Avg chain length: %f\n",
+                        stat.keys, 
+                        stat.tables,
+                        stat.keysz/(float)stat.keys,
+                        stat.valuesz/(float)stat.keys,
+                        stat.capacity,
+                        stat.keys/(float)stat.capacity,
+                        stat.maxlen,
+                        stat.nodes,
+                        stat.nodes/(float)stat.capacity,
+                        stat.keys/(float)stat.nodes);
+                #else
+                    fprintf(data, "%0.3f ", stat.keysz/(float)stat.keys);
+                    sleep(1);
+                #endif
             }
             else if ( !strcmp(cmd, "MASS"))
             {
@@ -209,7 +217,7 @@ int main(int argc, char* argv[])
                     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                     #else
                     fprintf(data, "%.2lf ", simple_time);
-                    sleep(20);
+                    sleep(3);
                     #endif
                 }
 
