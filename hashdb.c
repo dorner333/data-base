@@ -110,18 +110,19 @@ int _file_load_stat(int fh, Stat* stat)
 }
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-// static - функция видна только этому объектному файлу
-// inline - компилятор подставляет тело функции вместо ее вызова
-static inline uint32_t murmur_32_scramble(uint32_t k) {
+//  - функция видна только этому объектному файлу
+//  - компилятор подставляет тело функции вместо ее вызова
+ uint64_t murmur_32_scramble(uint32_t k) {
     k *= 0xcc9e2d51;
     k =   (k >> 17)| (k << 15);
     k *= 0x1b873593;
     return k;
 }
 
-static inline uint32_t murmur3_32(const uint8_t* key, size_t len, uint32_t seed)
+  uint64_t murmur3_32(const uint8_t* key)
 {
-	uint32_t h = seed;
+    int len = strlen(key);
+	uint32_t h = 228322;
     uint32_t k;
     /* Read in groups of 4. */
     for (size_t i = len >> 2; i; i--) {
@@ -153,7 +154,7 @@ static inline uint32_t murmur3_32(const uint8_t* key, size_t len, uint32_t seed)
 	return h;
 }
 
-static inline uint64_t rot1333(const uint8_t* v) {
+  uint64_t rot1333(const uint8_t* v) {
     //return murmur3_32(v, strlen(v), 0x989124f1);
     uint64_t h = 0xb928c940def2313c;
     uint8_t p = 241;
@@ -180,7 +181,7 @@ static inline uint64_t rot1333(const uint8_t* v) {
 
 // #include <openssl/md5.h>
 /*
-static inline uint64_t md5hash(const char* v) {
+  uint64_t md5hash(const char* v) {
     unsigned char result[MD5_DIGEST_LENGTH];
     uint64_t* k = (uint64_t*)result;
     MD5(v, strlen(v), result);
@@ -188,32 +189,6 @@ static inline uint64_t md5hash(const char* v) {
 }
 
 */
-
-//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-
-typedef struct _Cursor { // Для поиска элемента, сохраняет значение поиска
-    int fh;
-    Stat* stat;
-    THeader th; // Текущая таблица
-    off_t tableoff; // Смещение заголовка внутри файла
-    uint64_t hash;
-    uint64_t hash2;
-    int idx; // индекс текущего элемента в таблице
-    Node node; // текущий элемент
-    off_t nodeoff; // смещение текущего элеменьа
-    Node chain; // текущий элемент цепочки
-    off_t chainoff; // Смещение текущего элемента внутри файла
-    Node prev; // Предыдущий прочитанный элемент
-    off_t prevoff; // Смещение предыдущего прочитанного элеменат
-    int len; // текущая длина
-}Cursor;
- // node    chain
- // v        v
- // N1->N3->N4->N5
- // N2
- // N5->N6->N7->N8 <<< cursor
- // x
-
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
@@ -438,15 +413,15 @@ int _ht_search(DB* db, Cursor* cur, const char* key) // Инициализаци
     memset(cur, 0, sizeof(Cursor)); // Обнуление курсора
     cur->stat = &db->stat;
     cur->fh = db->fh;
-   cur->hash = db->hash(key);
-  //  cur->hash2 = db->hash2(key);
+    cur->hash = db->hash(key);
+    //  cur->hash2 = db->hash2(key);
     _cur_read_table(cur, (off_t)sizeof(DHeader)); // Считываем саму табличку
     return _cur_search(cur, key); // Ищем с помощью курсора
 }
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
-DB* ht_open(const char* filename, size_t initial_capacity)  // Открытие файла базы данных
+DB* ht_open(const char* filename, size_t initial_capacity, uint64_t (*hash_funk)(const uint8_t* key))  // Открытие файла базы данных
 {
     DB* dbh;
     FILE* f = fopen(filename, "r");
@@ -474,7 +449,8 @@ DB* ht_open(const char* filename, size_t initial_capacity)  // Открытие 
     dbh = malloc(sizeof(DB));
     dbh->fh = fileno(f);
     //dbh->hash = rot1333;
-    dbh->hash = rot1333; // ! QUESTION !
+    //dbh->hash =  rot1333; // ! QUESTION !
+    dbh->hash = hash_funk  ; // ! QUESTION !
     //dbh->hash2 = rot1333;
     _file_load_stat(dbh->fh, &dbh->stat);
     return dbh;
