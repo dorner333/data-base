@@ -1,5 +1,6 @@
 #include "hashdb.h"
 
+
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 int _file_cmp_block(int fh,  const char* key, size_t ks) //побайтовое равнение блоков
@@ -205,7 +206,7 @@ typedef struct _Cursor { // Для поиска элемента, сохраня
     off_t chainoff; // Смещение текущего элемента внутри файла
     Node prev; // Предыдущий прочитанный элемент
     off_t prevoff; // Смещение предыдущего прочитанного элеменат
-    int len; // текущая длина
+    int len; // текущая длина цепочки
 }Cursor;
  // node    chain
  // v        v
@@ -438,8 +439,8 @@ int _ht_search(DB* db, Cursor* cur, const char* key) // Инициализаци
     memset(cur, 0, sizeof(Cursor)); // Обнуление курсора
     cur->stat = &db->stat;
     cur->fh = db->fh;
-   cur->hash = db->hash(key);
-  //  cur->hash2 = db->hash2(key);
+    cur->hash = db->hash(key);
+    //  cur->hash2 = db->hash2(key);
     _cur_read_table(cur, (off_t)sizeof(DHeader)); // Считываем саму табличку
     return _cur_search(cur, key); // Ищем с помощью курсора
 }
@@ -449,7 +450,7 @@ int _ht_search(DB* db, Cursor* cur, const char* key) // Инициализаци
 DB* ht_open(const char* filename, size_t initial_capacity)  // Открытие файла базы данных
 {
     DB* dbh;
-    FILE* f = fopen(filename, "r");
+    FILE* f = fopen(filename, "r+");
     if ( f ) {
         if (_file_check_magic(fileno(f))) {
             f = freopen(NULL, "r+", f);
@@ -515,10 +516,14 @@ int ht_set(DB* db, const char* key, const char* value)  //  Установка �
             error("DONE\n");
         }
 
-        if ( cur.nodeoff == cur.chainoff && !cur.node.keyoff )
+        if ( cur.nodeoff == cur.chainoff && !cur.node.keyoff ) // Если коллизии нету
             return _cur_write_node(&cur, key, value);
-        else
+        else // пишем в цепочку
+        {
+            //lznsAmount ++;
+            db->stat.clzns++;
             return _cur_write_chain(&cur, key, value);
+        }
     }
 }
 
@@ -565,3 +570,5 @@ int ht_get_stat(DB* dbh, Stat* stat)
     *stat = dbh->stat;
     return 0;
 }
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
