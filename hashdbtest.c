@@ -6,7 +6,7 @@
 // для дебага тестов
 //#define DEBUG
 // режим эксперемента
-//#define STAT
+#define STAT
 
 int main(int argc, char* argv[])
 {

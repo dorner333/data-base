@@ -100,10 +100,14 @@ int ht_get_stat(DB* dbh, Stat* stat);
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 uint32_t rot1333(const uint8_t* key);
+
 uint32_t murmur3_32(const uint8_t* key);
 uint32_t murmur_32_scramble(uint32_t k);
+
 uint32_t murmur2_32 (const uint8_t* key);
+
 uint32_t CRC32 (const uint8_t* key);
+
 uint32_t FNV32 (const uint8_t *key);
 
 void* hash_open(char* hash_name);
