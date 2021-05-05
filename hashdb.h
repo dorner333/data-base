@@ -71,7 +71,26 @@ typedef struct _Node { // Структура самого элемента та�
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
-DB* ht_open(const char* filename, size_t initial_capacity);
+typedef struct _Cursor { // Для поиска элемента, сохраняет значение поиска
+    int fh;
+    Stat* stat;
+    THeader th; // Текущая таблица
+    off_t tableoff; // Смещение заголовка внутри файла
+    uint32_t hash;
+    uint32_t hash2;
+    int idx; // индекс текущего элемента в таблице
+    Node node; // текущий элемент
+    off_t nodeoff; // смещение текущего элеменьа
+    Node chain; // текущий элемент цепочки
+    off_t chainoff; // Смещение текущего элемента внутри файла
+    Node prev; // Предыдущий прочитанный элемент
+    off_t prevoff; // Смещение предыдущего прочитанного элеменат
+    int len; // текущая длина цепочки
+}Cursor;
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+DB* ht_open(const char* filename, size_t initial_capacity, uint32_t(*hash_funk)(const uint8_t* key));
 int ht_set(DB* dbh, const char* key, const char* value);
 int ht_get(DB* dbh, const char* key, char** value);
 int ht_del(DB* dbh, const char* key);
@@ -79,6 +98,22 @@ int ht_close(DB* dbh);
 int ht_get_stat(DB* dbh, Stat* stat);
 
 
+
+
+uint32_t rot1333(const uint8_t* key);
+
+uint32_t murmur3_32(const uint8_t* key);
+uint32_t murmur_32_scramble(uint32_t k);
+
+uint32_t murmur2_32 (const uint8_t* key);
+
+uint32_t CRC32 (const uint8_t* key);
+
+uint32_t FNV32 (const uint8_t *key);
+
+void* hash_open(char* hash_name);
+void hash_print(DB* dbh);
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 
 #endif /* _HASHDB_H_ */
