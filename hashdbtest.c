@@ -5,26 +5,22 @@
 
 // для дебага тестов
 //#define DEBUG
-// режим эксперемента
-#define STAT 
 
 int main(int argc, char* argv[])
 {
     DB* dbh;
     char buf[4096] = {};
     long long ftime = 0;
-    double simple_time = 0;
-
-    #ifdef STAT
-    FILE* data = fopen("data.txt", "a");
-    #endif
+    long long simple_time = 0;
 
     if (argc < 2)
     {
         printf("usage: %s <dbfilename>\n", argv[0]);
         exit(1);
     }
-    dbh = ht_open(argv[1], 141307);
+    uint32_t (*hash)(const uint8_t* v);
+    hash =  (hash_open(argv[2]));
+    dbh = ht_open(argv[1], 141307, hash);
     if ( !dbh ) {
         printf("Cannot open database %s\n", argv[1]);
         exit(1);
@@ -32,7 +28,8 @@ int main(int argc, char* argv[])
 
     // simple menu
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #ifndef STAT
+    hash_print(dbh);
+
     printf("Choose an action:\n\n");
 
     printf("Exit or QUIT            -- to exit\n");
@@ -41,7 +38,6 @@ int main(int argc, char* argv[])
     printf("GET /**/                -- to set value by key\n");
     printf("STAT                    -- to get a data base statistic\n");
     printf("DEL /*key*/             -- to delite value by key\n\n");
-    #endif
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     while(fgets(buf, 4096, stdin))
@@ -91,17 +87,10 @@ int main(int argc, char* argv[])
                 clock_gettime (CLOCK_REALTIME, &mt2);
                 //Рассчитываем разницу времени между двумя измерениями
                 ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
-                simple_time = (double) ftime/1000000; //milliseconds
-
-                #ifndef STAT
                 printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                 printf("TIME DUMP [HT_GET]\n");
-                printf("ht_get function real time: %.2lf millisecons = %lld nanoseconds\n", simple_time, ftime);
+                printf("ht_get function real time: %lld nanosecons\n", ftime);
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
-                #else
-                fprintf(data, "%.2lf ", simple_time);
-                sleep(0.5);
-                #endif
             }
             else if ( !strcmp(cmd, "DEL"))
             {
@@ -125,17 +114,10 @@ int main(int argc, char* argv[])
                 clock_gettime (CLOCK_REALTIME, &mt2);
                 //Рассчитываем разницу времени между двумя измерениями
                 ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
-                simple_time = (double) ftime/1000000; //milliseconds
-
-                #ifndef STAT
                 printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                 printf("TIME DUMP [HT_DEL]\n");
-                printf("ht_del function real time: %.2lf millisecons = %lld nanoseconds\n", simple_time, ftime);
+                printf("ht_del function real time: %lld nanosecons\n", ftime);
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
-                #else
-                fprintf(data, "%.2lf ", simple_time);
-                sleep(0.5);
-                #endif
 
             }
             else if ( !strcmp(cmd, "STAT"))
@@ -149,8 +131,7 @@ int main(int argc, char* argv[])
                     "Max chain length: %u\n"
                     "Filled nodes: %lu\n"
                     "Node fill factor: %f\n"
-                    "Avg chain length: %f\n"
-                    "Collizions amount: %lu\n",
+                    "Avg chain length: %f\n",
                     stat.keys, stat.tables,
                     stat.keysz/(float)stat.keys,
                     stat.valuesz/(float)stat.keys,
@@ -159,9 +140,7 @@ int main(int argc, char* argv[])
                     stat.maxlen,
                     stat.nodes,
                     stat.nodes/(float)stat.capacity,
-                    stat.keys/(float)stat.nodes,
-                    stat.clzns);
-                //printf("Collizions amount = %d\n", ClznsAmount);
+                    stat.keys/(float)stat.nodes);
             }
             else if ( !strcmp(cmd, "MASS"))
             {
@@ -201,19 +180,12 @@ int main(int argc, char* argv[])
                     #endif
                     //Рассчитываем разницу времени между двумя измерениями
                     ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
-                    simple_time = ftime / cnt;
-                    simple_time = simple_time / 1000000; // millisecons
-
-                    #ifndef STAT
+                    simple_time = ftime / cnt; //!!!
                     printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                     printf("TIME DUMP [HT_SET]\n");
                     printf("ht_set function real time: %lld nanosecons\n", ftime);
-                    printf("time to set one pair k-v: %.2lf milliseconds = %lld nanoseconds\n", simple_time, ftime/cnt);
+                    printf("time to set one pair k-v: %lld nanoseconds\n", simple_time);
                     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
-                    #else
-                    fprintf(data, "%.2lf ", simple_time);
-                    sleep(3.33);
-                    #endif
                 }
 
             }
@@ -228,16 +200,75 @@ int main(int argc, char* argv[])
         }
     }
     ht_close(dbh);
-
-    #ifdef STAT
-    fprintf(data, "\n");
-    fclose(data);
-    #endif
-
     return 0;
 }
 
-//! WARNING: при использовании функции MASS программа начинает выдавать [err] на значении счетчика 170000
+void* hash_open(char* hash_name)
+    {
+    uint32_t (*hash)(const uint8_t* v);
+
+    if (!strcmp(hash_name,"murmur3"))
+        {
+        hash = murmur3_32;
+        }
+    else if (!strcmp(hash_name,"murmur2"))
+        {
+        hash = murmur2_32;
+        }
+    else if (!strcmp(hash_name,"murmur3_32"))
+        {
+        hash = murmur3_32;
+        }
+    else if (!strcmp(hash_name,"murmur2_32"))
+        {
+        hash = murmur2_32;
+        }
+    else if (!strcmp(hash_name,"CRC32"))
+        {
+        hash = CRC32;
+        }
+    else if (!strcmp(hash_name,"crc32"))
+        {
+        hash = CRC32;
+        }
+    else if (!strcmp(hash_name,"rot1333"))
+        {
+        hash = rot1333;
+        }
+    else
+        {
+        printf("!ERROR! BAD INPUT HASH FUNCTION NAME\n USING ROT1333\n");   
+        hash = rot1333;
+        }
+
+    return (void*) hash;
+    }
+
+void hash_print(DB* dbh)
+    {
+    if (dbh -> hash == rot1333)
+        {
+        printf("hash function - rot1333\n\n");
+        }
+    else if (dbh -> hash == murmur3_32)
+        {
+        printf("hash function - murmur3_32\n\n");
+        }
+    else if (dbh -> hash == murmur2_32)
+        {
+        printf("hash function - murmur2_32\n\n");
+        }
+    else if (dbh -> hash == CRC32)
+        {
+        printf("hash function - CRC32\n\n");
+        }    
+    else 
+        {
+        printf("hash function - NULL(error)\n\n");
+        }
+    }
+
+//! WARNIN: при использовании функции MASS программа начинает выдавать [err] на значении счетчика 170000
 //! ввести 1000000 за раз я так и не смог (не дождался)
 
 //TODO: Паша
@@ -246,6 +277,3 @@ int main(int argc, char* argv[])
 //* добавил подсчет времени работы функции DEl
 //* добавил вывод менюшки действий при запуске
 //* сделал черновой вариант тестирования
-
-//* сделал в hashdbtest мод STAT для записи экспеперемнтальных данных в файл
-//* сделал bush script для автоматического сбора данных

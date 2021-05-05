@@ -7,6 +7,10 @@
 #include <stddef.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
+#include "immintrin.h" //ybrat
+
+#include <time.h>
 
 #define error(str, ...) fprintf(stderr, "[err] " str, ## __VA_ARGS__)
 #define log(str, ...)  {}
@@ -17,6 +21,9 @@
 #define DB_MAGIC  {'H', 'T', 'd', 'b'}
 #define TABLE_MAGIC  {'H', 'T', 'T', 'b'}
 #define CURRENT_VERSION 1
+
+//Структуры для сохранения определенного времени
+struct timespec mt1, mt2;
 
 typedef struct _Stat {
     uint64_t keys; // Количество ключей
@@ -30,8 +37,8 @@ typedef struct _Stat {
 
 typedef struct _DB {
     int fh; // сам файл
-    uint64_t (*hash)(const char*);
-    uint64_t (*hash2)(const char*);
+    uint32_t (*hash)(const uint8_t*);
+    uint32_t (*hash2)(const uint8_t*);
     Stat stat; // Статистика таблицы
 } DB;
 
@@ -62,7 +69,26 @@ typedef struct _Node { // Структура самого элемента та�
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
-DB* ht_open(const char* filename, size_t initial_capacity);
+typedef struct _Cursor { // Для поиска элемента, сохраняет значение поиска
+    int fh;
+    Stat* stat;
+    THeader th; // Текущая таблица
+    off_t tableoff; // Смещение заголовка внутри файла
+    uint32_t hash;
+    uint32_t hash2;
+    int idx; // индекс текущего элемента в таблице
+    Node node; // текущий элемент
+    off_t nodeoff; // смещение текущего элеменьа
+    Node chain; // текущий элемент цепочки
+    off_t chainoff; // Смещение текущего элемента внутри файла
+    Node prev; // Предыдущий прочитанный элемент
+    off_t prevoff; // Смещение предыдущего прочитанного элеменат
+    int len; // текущая длина цепочки
+}Cursor;
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+DB* ht_open(const char* filename, size_t initial_capacity, uint32_t(*hash_funk)(const uint8_t* key));
 int ht_set(DB* dbh, const char* key, const char* value);
 int ht_get(DB* dbh, const char* key, char** value);
 int ht_del(DB* dbh, const char* key);
@@ -70,5 +96,20 @@ int ht_close(DB* dbh);
 int ht_get_stat(DB* dbh, Stat* stat);
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+uint32_t rot1333(const uint8_t* key);
+
+uint32_t murmur3_32(const uint8_t* key);
+uint32_t murmur_32_scramble(uint32_t k);
+
+uint32_t murmur2_32 (const uint8_t* key);
+
+uint32_t CRC32 (const uint8_t* key);
+
+
+void* hash_open(char* hash_name);
+void hash_print(DB* dbh);
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
 
 #endif /* _HASHDB_H_ */

@@ -1,6 +1,5 @@
 #include "hashdb.h"
 
-
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 int _file_cmp_block(int fh,  const char* key, size_t ks) //побайтовое равнение блоков
@@ -111,18 +110,19 @@ int _file_load_stat(int fh, Stat* stat)
 }
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-// static - функция видна только этому объектному файлу
-// inline - компилятор подставляет тело функции вместо ее вызова
-static inline uint32_t murmur_32_scramble(uint32_t k) {
+//  - функция видна только этому объектному файлу
+//  - компилятор подставляет тело функции вместо ее вызова
+uint32_t murmur_32_scramble(uint32_t k) {
     k *= 0xcc9e2d51;
     k =   (k >> 17)| (k << 15);
     k *= 0x1b873593;
     return k;
 }
 
-static inline uint32_t murmur3_32(const uint8_t* key, size_t len, uint32_t seed)
+uint32_t murmur3_32(const uint8_t* key)
 {
-	uint32_t h = seed;
+    int len = strlen(key);
+	uint32_t h = 228322;
     uint32_t k;
     /* Read in groups of 4. */
     for (size_t i = len >> 2; i; i--) {
@@ -154,34 +154,107 @@ static inline uint32_t murmur3_32(const uint8_t* key, size_t len, uint32_t seed)
 	return h;
 }
 
-static inline uint64_t rot1333(const uint8_t* v) {
-    //return murmur3_32(v, strlen(v), 0x989124f1);
-    uint64_t h = 0xb928c940def2313c;
+  uint32_t rot1333(const uint8_t* key) {
+    //return murmur3_32(key, strlen(key), 0x989124f1);
+    uint32_t h = 0xb928c940;
     uint8_t p = 241;
     uint8_t pp = 117;
-    while(*v) {
+    while(*key) {
         //h = (h >> 31 ) | (h << 33);
-        h += 0xaa4294967291*(17*(*v)*p*pp+31*(*v)*p + 5*(*v)+3*p + pp + 11*(*v)) ; // + 0x55555555555559*(((*v) >> 5) | ((*v) << 3));
+        h += 0xaa4294967291*(17*(*key)*p*pp+31*(*key)*p + 5*(*key)+3*p + pp + 11*(*key)) ; // + 0x55555555555559*(((*key) >> 5) | ((*key) << 3));
         //h ^= (h <<32);
-        h = (h >> 51) | (h << 13);
+        h = (h >> 25) | (h << 7);
         h *= 128000115967;
-        h = (h >> 45) | (h << 19);
-        h ^= (h >> 31) ^ (h << 33);
-        h = (h >> 49) | (h << 15);
-        h = (h >> 47) | (h << 17);
+        h = (h >> 23) | (h << 9);
+        h ^= (h >> 15) ^ (h << 17);
+        h = (h >> 23) | (h << 9);
+        h = (h >> 21) | (h << 11);
         pp = p;
-        p = *v;
-        v++;
+        p = *key;
+        key++;
 
     }
     return h;
+}
+
+uint32_t murmur2_32 (const uint8_t* /*key*/ key) 
+{
+    const unsigned int magicConst   = 0x5bd1e995;
+    const unsigned int seed         = 0;
+    const          int marg         = 24;
+    int len = strlen(key);
+
+
+          unsigned int hash         = seed ^ len;
+    
+    const unsigned char*  data      = (const unsigned char*) key;
+
+          unsigned int    symb      = 0; 
+
+    while (len >= 4) {
+
+        symb  = data [0];
+        symb |= data [1] << 8;
+        symb |= data [2] << 16;
+        symb |= data [3] << 24;
+
+        symb *= magicConst;
+        symb ^= symb >> marg;
+        symb *= magicConst;
+
+        hash *= magicConst;
+        hash ^= symb;
+
+        data += 4;
+        len  -= 4;
+
+    }      
+
+    switch (len) {
+
+        case 3:
+            hash ^= data [2] << 16;
+        case 2:
+            hash ^= data [1] << 8;
+        case 1:
+            hash ^= data [0];
+            hash *= magicConst;
+
+    };
+
+    hash ^= hash >> 13;
+    hash *= magicConst;
+    hash ^= hash >> 15;
+
+    return hash;
+
+}
+
+uint32_t CRC32 (const uint8_t* key)
+{
+    assert (key);
+    const uint32_t polynomial  = 0x04C11DB7;
+    const uint32_t pol_old_bit = 1 << 26;
+    uint32_t hash = 0x0;
+
+    while (*key)
+    {
+        for (int i_bit = 7; i_bit >= 0; i_bit--)
+        {
+            hash = (hash << 1) + (((*key) >> i_bit) & 1); // add 1 bit
+            if (hash & pol_old_bit)
+                hash ^= polynomial;
+        }
+        key++;
+    }
+    return hash;
 }
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 // #include <openssl/md5.h>
 /*
-static inline uint64_t md5hash(const char* v) {
+  uint64_t md5hash(const char* v) {
     unsigned char result[MD5_DIGEST_LENGTH];
     uint64_t* k = (uint64_t*)result;
     MD5(v, strlen(v), result);
@@ -189,32 +262,6 @@ static inline uint64_t md5hash(const char* v) {
 }
 
 */
-
-//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-
-typedef struct _Cursor { // Для поиска элемента, сохраняет значение поиска
-    int fh;
-    Stat* stat;
-    THeader th; // Текущая таблица
-    off_t tableoff; // Смещение заголовка внутри файла
-    uint64_t hash;
-    uint64_t hash2;
-    int idx; // индекс текущего элемента в таблице
-    Node node; // текущий элемент
-    off_t nodeoff; // смещение текущего элеменьа
-    Node chain; // текущий элемент цепочки
-    off_t chainoff; // Смещение текущего элемента внутри файла
-    Node prev; // Предыдущий прочитанный элемент
-    off_t prevoff; // Смещение предыдущего прочитанного элеменат
-    int len; // текущая длина цепочки
-}Cursor;
- // node    chain
- // v        v
- // N1->N3->N4->N5
- // N2
- // N5->N6->N7->N8 <<< cursor
- // x
-
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
@@ -447,10 +494,10 @@ int _ht_search(DB* db, Cursor* cur, const char* key) // Инициализаци
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
-DB* ht_open(const char* filename, size_t initial_capacity)  // Открытие файла базы данных
+DB* ht_open(const char* filename, size_t initial_capacity, uint32_t (*hash_funk)(const uint8_t* key))  // Открытие файла базы данных
 {
     DB* dbh;
-    FILE* f = fopen(filename, "r+");
+    FILE* f = fopen(filename, "r");
     if ( f ) {
         if (_file_check_magic(fileno(f))) {
             f = freopen(NULL, "r+", f);
@@ -474,9 +521,7 @@ DB* ht_open(const char* filename, size_t initial_capacity)  // Открытие 
     }
     dbh = malloc(sizeof(DB));
     dbh->fh = fileno(f);
-    //dbh->hash = rot1333;
-    dbh->hash = rot1333; // ! QUESTION !
-    //dbh->hash2 = rot1333;
+    dbh->hash = hash_funk  ; // ! QUESTION !
     _file_load_stat(dbh->fh, &dbh->stat);
     return dbh;
 }
@@ -516,14 +561,10 @@ int ht_set(DB* db, const char* key, const char* value)  //  Установка �
             error("DONE\n");
         }
 
-        if ( cur.nodeoff == cur.chainoff && !cur.node.keyoff ) // Если коллизии нету
+        if ( cur.nodeoff == cur.chainoff && !cur.node.keyoff )
             return _cur_write_node(&cur, key, value);
-        else // пишем в цепочку
-        {
-            //lznsAmount ++;
-            db->stat.clzns++;
+        else
             return _cur_write_chain(&cur, key, value);
-        }
     }
 }
 
@@ -570,5 +611,3 @@ int ht_get_stat(DB* dbh, Stat* stat)
     *stat = dbh->stat;
     return 0;
 }
-
-//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
