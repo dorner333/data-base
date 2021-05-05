@@ -249,6 +249,19 @@ uint32_t CRC32 (const uint8_t* key)
     }
     return hash;
 }
+ 
+uint32_t FNV32 (const uint8_t *key)
+    {
+    uint32_t hval = 0x811c9dc5;
+
+    while (*key)
+        {
+        hval ^= (uint32_t)*key++;
+        hval *= 599;
+        }
+
+    return hval;
+    }
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
