@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _HASHDB_H_
 #define _HASHDB_H_
 
@@ -12,8 +13,6 @@
 
 #include <time.h>
 
-#include <time.h>
-
 #define error(str, ...) fprintf(stderr, "[err] " str, ## __VA_ARGS__)
 #define log(str, ...)  {}
 
@@ -24,6 +23,9 @@
 #define TABLE_MAGIC  {'H', 'T', 'T', 'b'}
 #define CURRENT_VERSION 1
 
+
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 //Структуры для сохранения определенного времени
 struct timespec mt1, mt2;
 

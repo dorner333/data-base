@@ -3,6 +3,15 @@
 #include <stdlib.h>
 #include "hashdb.h"
 
+#define _RED_                "\x1b[31;1m"
+#define _BOLD_               "\x1b[1m"
+#define _GREEN_              "\x1b[32;1m"
+#define _LIGHT_BLUE_         "\x1b[36;1m"
+#define _YELLOW_             "\x1b[33;1m"
+#define _PINK_               "\x1b[35;1m"
+#define _BLUE_               "\x1b[34;1m"
+#define _RES_                "\x1b[0m"
+
 // для дебага тестов
 //#define DEBUG
 // режим эксперемента
@@ -28,23 +37,34 @@ int main(int argc, char* argv[])
     hash =  (hash_open(argv[2]));
     dbh = ht_open(argv[1], 141307, hash);
     if ( !dbh ) {
-        printf("Cannot open database %s\n", argv[1]);
+        printf("!!ERROR: Cannot open database %s!!\n", argv[1]);
         exit(1);
     }
 
     // simple menu
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #ifndef STAT
+    printf("\n\n##################################################################################\n");
+    printf("##                                                                              ##\n");
+    printf("##                                                                              ##\n");
+    #endif
+
     hash_print(dbh);
 
     #ifndef STAT
-    printf("Choose an action:\n\n");
-
-    printf("Exit or QUIT            -- to exit\n");
-    printf("MASS /*sart*/ /*count*/ -- to fill data base by values\n");
-    printf("SET /*key*/             -- to set value by key\n");
-    printf("GET /**/                -- to set value by key\n");
-    printf("STAT                    -- to get a data base statistic\n");
-    printf("DEL /*key*/             -- to delite value by key\n\n");
+    printf("##                                                                              ##\n");
+    printf("##                                                                              ##\n");
+    printf("##    Choose an action:                                                         ##\n");
+    printf("##                                                                              ##\n");
+    printf("##    "_PINK_" MASS\x1b[0m "RES"              /*sart*/ /*count*/ -- to fill data base by values     ##\n");
+    printf("##    "_PINK_" SET\x1b[0m  "RES"              /*key*/  /*value*/ -- to set value by key             ##\n");
+    printf("##    "_PINK_" GET\x1b[0m  "RES"              /*key*/            -- to set value by key             ##\n");
+    printf("##    "_PINK_" DEL\x1b[0m  "RES"              /*key*/            -- to delite value by key          ##\n");
+    printf("##    "_PINK_" STAT\x1b[0m "RES"                                 -- to get a data base statistic    ##\n");
+    printf("##    "_PINK_" Exit or QUIT "RES"                        -- to exit                         ##\n");
+    printf("##                                                                              ##\n");
+    printf("##                                                                              ##\n");
+    printf("##################################################################################\n\n");
     #endif
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -100,7 +120,7 @@ int main(int argc, char* argv[])
                 #ifndef STAT
                 printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                 printf("TIME DUMP [HT_GET]\n");
-                printf("ht_get function real time: %.2lf millisecons = %lld nanoseconds\n", simple_time, ftime);
+                printf("ht_get function real time: %.2lf millisecons\n", simple_time);
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                 #else
                 fprintf(data, "%.2lf ", simple_time);
@@ -134,7 +154,7 @@ int main(int argc, char* argv[])
                 #ifndef STAT
                 printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                 printf("TIME DUMP [HT_DEL]\n");
-                printf("ht_del function real time: %.2lf millisecons = %lld nanoseconds\n", simple_time, ftime);
+                printf("ht_del function real time: %.2lf millisecons\n", simple_time);
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                 #else
                 fprintf(data, "%.2lf ", simple_time);
@@ -217,7 +237,7 @@ int main(int argc, char* argv[])
                     printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                     printf("TIME DUMP [HT_SET]\n");
                     printf("ht_set function real time: %lld nanosecons\n", ftime);
-                    printf("time to set one pair k-v: %.2lf milliseconds = %lld nanoseconds\n", simple_time, ftime/cnt);
+                    printf("time to set one pair k-v: %.2lf milliseconds", simple_time);
                     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                     #else
                     fprintf(data, "%.2lf ", simple_time);
@@ -297,30 +317,35 @@ void* hash_open(char* hash_name)
 
 void hash_print(DB* dbh)
     {
+    //#ifdef STAT 
+        printf("##    Hash function - ");
+    //#endif
     if (dbh -> hash == rot1333)
         {
-        printf("hash function - rot1333\n\n");
+        printf("rot1333              ");
         }
     else if (dbh -> hash == murmur3_32)
         {
-        printf("hash function - murmur3_32\n\n");
+        printf("murmur3_32           ");
         }
     else if (dbh -> hash == murmur2_32)
         {
-        printf("hash function - murmur2_32\n\n");
+        printf("murmur2_32           ");
         }
     else if (dbh -> hash == CRC32)
         {
-        printf("hash function - CRC32\n\n");
+        printf("CRC32                ");
         }
     else if (dbh -> hash == FNV32)
         {
-        printf("hash function - FNV32\n\n");
+        printf("FNV32                ");
         }      
     else 
         {
-        printf("hash function - NULL(error)\n\n");
+        printf("NULL(error)          ");
         }
+
+    printf("                                     ##\n");
     }
 
 //! WARNIN: при использовании функции MASS программа начинает выдавать [err] на значении счетчика 170000
