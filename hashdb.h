@@ -7,6 +7,12 @@
 #include <stddef.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
+#include "immintrin.h" //ybrat
+
+#include <time.h>
+
+#include <time.h>
 
 #define error(str, ...) fprintf(stderr, "[err] " str, ## __VA_ARGS__)
 #define log(str, ...)  {}
@@ -17,6 +23,9 @@
 #define DB_MAGIC  {'H', 'T', 'd', 'b'}
 #define TABLE_MAGIC  {'H', 'T', 'T', 'b'}
 #define CURRENT_VERSION 1
+
+//Структуры для сохранения определенного времени
+struct timespec mt1, mt2;
 
 typedef struct _Stat {
     uint64_t keys; // Количество ключей
@@ -30,8 +39,8 @@ typedef struct _Stat {
 
 typedef struct _DB {
     int fh; // сам файл
-    uint64_t (*hash)(const char*);
-    uint64_t (*hash2)(const char*);
+    uint32_t (*hash)(const uint8_t*);
+    uint32_t (*hash2)(const uint8_t*);
     Stat stat; // Статистика таблицы
 } DB;
 
@@ -47,7 +56,7 @@ typedef struct _THeader { // Заголовок текущей таблицы
     uint32_t capacity; //Общая емкость таблицы
     uint32_t size; // Текущий разер таблицы
     uint32_t nodes; // Количество узлов
-    uint16_t len; //
+    uint16_t len;
     int64_t next; // Указатель на следующую таблицу
 } THeader;
 
@@ -69,6 +78,7 @@ int ht_del(DB* dbh, const char* key);
 int ht_close(DB* dbh);
 int ht_get_stat(DB* dbh, Stat* stat);
 
-//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+
 
 #endif /* _HASHDB_H_ */
