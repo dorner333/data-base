@@ -518,6 +518,8 @@ int ht_set(DB* db, const char* key, const char* value)  //  Установка �
         if ( cur.nodeoff == cur.chainoff && !cur.node.keyoff )
             return _cur_write_node(&cur, key, value);
         else
+            cur.stat->collision_amount++; // счетчик коллизий
+            //printf("current collision amount : (%lu)\n", cur.stat->collision_amount);
             return _cur_write_chain(&cur, key, value);
     }
 }

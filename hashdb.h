@@ -31,6 +31,7 @@ typedef struct _Stat {
     uint64_t valuesz; // Рарзмер значения
     uint16_t maxlen; // Максимальная длина
     uint64_t nodes; // Количество элементов (узлов)
+    uint64_t collision_amount; // количество коллизий
 } Stat;
 
 typedef struct _DB {
