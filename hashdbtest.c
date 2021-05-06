@@ -176,7 +176,8 @@ int main(int argc, char* argv[])
                         "Max chain length: %u\n"
                         "Filled nodes: %lu\n"
                         "Node fill factor: %f\n"
-                        "Avg chain length: %f\n",
+                        "Avg chain length: %f\n"
+                        "Collision amount: %lu\n",
                         stat.keys, 
                         stat.tables,
                         stat.keysz/(float)stat.keys,
@@ -186,7 +187,8 @@ int main(int argc, char* argv[])
                         stat.maxlen,
                         stat.nodes,
                         stat.nodes/(float)stat.capacity,
-                        stat.keys/(float)stat.nodes);
+                        stat.keys/(float)stat.nodes,
+                        stat.collision_amount);
                 #else
                     fprintf(data, "%0.3f ", stat.keysz/(float)stat.keys);
                     sleep(1);
