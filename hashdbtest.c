@@ -56,12 +56,12 @@ int main(int argc, char* argv[])
     printf("##                                                                              ##\n");
     printf("##    Choose an action:                                                         ##\n");
     printf("##                                                                              ##\n");
-    printf("##    "_PINK_" MASS\x1b[0m "RES"              /*sart*/ /*count*/ -- to fill data base by values     ##\n");
-    printf("##    "_PINK_" SET\x1b[0m  "RES"              /*key*/  /*value*/ -- to set value by key             ##\n");
-    printf("##    "_PINK_" GET\x1b[0m  "RES"              /*key*/            -- to set value by key             ##\n");
-    printf("##    "_PINK_" DEL\x1b[0m  "RES"              /*key*/            -- to delite value by key          ##\n");
-    printf("##    "_PINK_" STAT\x1b[0m "RES"                                 -- to get a data base statistic    ##\n");
-    printf("##    "_PINK_" Exit or QUIT "RES"                        -- to exit                         ##\n");
+    printf("##    "_PINK_" MASS\x1b[0m "_RES_"              /*sart*/ /*count*/ -- to fill data base by values     ##\n");
+    printf("##    "_PINK_" SET\x1b[0m  "_RES_"              /*key*/  /*value*/ -- to set value by key             ##\n");
+    printf("##    "_PINK_" GET\x1b[0m  "_RES_"              /*key*/            -- to set value by key             ##\n");
+    printf("##    "_PINK_" DEL\x1b[0m  "_RES_"              /*key*/            -- to delite value by key          ##\n");
+    printf("##    "_PINK_" STAT\x1b[0m "_RES_"                                 -- to get a data base statistic    ##\n");
+    printf("##    "_PINK_" Exit or QUIT "_RES_"                         -- to exit                         ##\n");
     printf("##                                                                              ##\n");
     printf("##                                                                              ##\n");
     printf("##################################################################################\n\n");
@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
                     printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                     printf("TIME DUMP [HT_SET]\n");
                     printf("ht_set function real time: %lld nanosecons\n", ftime);
-                    printf("time to set one pair k-v: %.2lf milliseconds", simple_time);
+                    printf("time to set one pair k-v: %.2lf milliseconds\n", simple_time);
                     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
                     #else
                     fprintf(data, "%.2lf ", simple_time);
