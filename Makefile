@@ -8,7 +8,7 @@ test1:
 	gcc -c test1.c
 	gcc -o test1 test1.o hashdb.o
 
-details:
+Ofast:
 	gcc -ftime-report -Ofast -c -o hashdb.o hashdb.c
 	gcc -ftime-report -Ofast -c -o hashdbtest.o hashdbtest.c
 	gcc -Ofast -o hashdbtest hashdbtest.o hashdb.o

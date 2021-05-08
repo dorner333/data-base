@@ -4,3 +4,4 @@ hashdbtest
 callgrind.out.*
 data.txt
 test1
+test

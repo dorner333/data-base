@@ -30,11 +30,16 @@ int main(int argc, char* argv[])
 
     if (argc < 2)
     {
-        printf("usage: %s <dbfilename>\n", argv[0]);
+        printf("usage: %s <dbfilename> <hashfunction>\n", argv[0]);
         exit(1);
     }
     uint32_t (*hash)(const uint8_t* v);
-    hash =  (hash_open(argv[2]));
+    if (argc < 3) {
+        hash = hash_open("rot1333");
+    }
+    else {
+        hash =  (hash_open(argv[2]));
+    }
     dbh = ht_open(argv[1], 141307, hash);
     if ( !dbh ) {
         printf("!!ERROR: Cannot open database %s!!\n", argv[1]);
