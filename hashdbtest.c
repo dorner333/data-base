@@ -61,12 +61,12 @@ int main(int argc, char* argv[])
     printf("##                                                                              ##\n");
     printf("##    Choose an action:                                                         ##\n");
     printf("##                                                                              ##\n");
-    printf("##    "_PINK_" MASS\x1b[0m "_RES_"              /*sart*/ /*count*/ -- to fill data base by values     ##\n");
-    printf("##    "_PINK_" SET\x1b[0m  "_RES_"              /*key*/  /*value*/ -- to set value by key             ##\n");
-    printf("##    "_PINK_" GET\x1b[0m  "_RES_"              /*key*/            -- to set value by key             ##\n");
-    printf("##    "_PINK_" DEL\x1b[0m  "_RES_"              /*key*/            -- to delite value by key          ##\n");
-    printf("##    "_PINK_" STAT\x1b[0m "_RES_"                                 -- to get a data base statistic    ##\n");
-    printf("##    "_PINK_" Exit or QUIT "_RES_"                         -- to exit                         ##\n");
+    printf("##    "_PINK_" MASS\x1b[0m "_RES_"              "_YELLOW_"/*"_GREEN_"sart"_YELLOW_"*/ /*"_GREEN_"count"_YELLOW_"*/ -- ""to fill data base by values"_RES_"     ##\n");
+    printf("##    "_PINK_" SET\x1b[0m  "_RES_"              "_YELLOW_"/*"_GREEN_"key"_YELLOW_"*/  /*"_GREEN_"value"_YELLOW_"*/ -- to set value by key"_RES_"             ##\n");
+    printf("##    "_PINK_" GET\x1b[0m  "_RES_"              "_YELLOW_"/*"_GREEN_"key"_YELLOW_"*/            -- to get value by key"_RES_"             ##\n");
+    printf("##    "_PINK_" DEL\x1b[0m  "_RES_"              "_YELLOW_"/*"_GREEN_"key"_YELLOW_"*/            -- to delete value by key"_RES_"          ##\n");
+    printf("##    "_PINK_" STAT\x1b[0m "_RES_"                                 "_YELLOW_"-- to get a data base statistic"_RES_"    ##\n");
+    printf("##    "_PINK_" EXIT or QUIT "_RES_"                         "_YELLOW_"-- to exit"_RES_"                         ##\n");
     printf("##                                                                              ##\n");
     printf("##                                                                              ##\n");
     printf("##################################################################################\n\n");
@@ -123,10 +123,14 @@ int main(int argc, char* argv[])
                 simple_time = (double) ftime/1000000; //milliseconds
 
                 #ifndef STAT
-                printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-                printf("TIME DUMP [HT_GET]\n");
-                printf("ht_get function real time: %.2lf millisecons\n", simple_time);
-                printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+                printf("\n##################################################################################\n");
+                printf("##                                                                              ##\n");
+                printf("##                                                                              ##\n");
+                printf("##                "_LIGHT_BLUE_" TIME DUMP [HT_GET] "_RES_"                                          ##\n");
+                printf("##                "_LIGHT_BLUE_" ht_get function real time: "_GREEN_"%8.2lf"_LIGHT_BLUE_" millisecons "_RES_"             ##\n",simple_time);
+                printf("##                                                                              ##\n");
+                printf("##                                                                              ##\n");
+                printf("##################################################################################\n\n");
                 #else
                 fprintf(data, "%.2lf ", simple_time);
                 sleep(3);
@@ -157,10 +161,14 @@ int main(int argc, char* argv[])
                 simple_time = (double) ftime/1000000; //milliseconds
 
                 #ifndef STAT
-                printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-                printf("TIME DUMP [HT_DEL]\n");
-                printf("ht_del function real time: %.2lf millisecons\n", simple_time);
-                printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+                printf("\n##################################################################################\n");
+                printf("##                                                                              ##\n");
+                printf("##                                                                              ##\n");
+                printf("##                "_LIGHT_BLUE_" TIME DUMP [HT_DEL] "_RES_"                                          ##\n");
+                printf("##                "_LIGHT_BLUE_" ht_del function real time: "_GREEN_"%8.2lf"_LIGHT_BLUE_" millisecons "_RES_"             ##\n", simple_time);
+                printf("##                                                                              ##\n");
+                printf("##                                                                              ##\n");
+                printf("##################################################################################\n\n");
                 #else
                 fprintf(data, "%.2lf ", simple_time);
                 sleep(3);
@@ -172,17 +180,17 @@ int main(int argc, char* argv[])
                 Stat stat;
                 ht_get_stat(dbh, &stat);
                 #ifndef STAT
-                    printf("Keys: %lu\n"
-                        "tables: %u\n"
-                        "Avg. key size: %f\n"
-                        "Avg. value size: %f\n"
-                        "Total capacity: %lu\n"
-                        "Avg. Fill factor: %f\n"
-                        "Max chain length: %u\n"
-                        "Filled nodes: %lu\n"
-                        "Node fill factor: %f\n"
-                        "Avg chain length: %f\n"
-                        "Collision amount: %lu\n",
+                    printf("\n\tKeys quantity:    "_GREEN_"%lu"_RES_"\n"
+                           "\ttables quantity:  "_GREEN_"%u"_RES_"\n"
+                           "\tAvg. key size:    "_GREEN_"%f"_RES_"\n"
+                           "\tAvg. value size:  "_GREEN_"%f"_RES_"\n"
+                           "\tTotal capacity:   "_GREEN_"%lu"_RES_"\n"
+                           "\tAvg. Fill factor: "_GREEN_"%f"_RES_"\n"
+                           "\tMax chain length: "_GREEN_"%u"_RES_"\n"
+                           "\tFilled nodes:     "_GREEN_"%lu"_RES_"\n"
+                           "\tNode fill factor: "_GREEN_"%f"_RES_"\n"
+                           "\tAvg chain length: "_GREEN_"%f"_RES_"\n"
+                           "\tCollision amount: "_GREEN_"%lu"_RES_"\n\n",
                         stat.keys, 
                         stat.tables,
                         stat.keysz/(float)stat.keys,
@@ -241,11 +249,15 @@ int main(int argc, char* argv[])
                     simple_time = simple_time / 1000000; // millisecons
 
                     #ifndef STAT
-                    printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-                    printf("TIME DUMP [HT_SET]\n");
-                    printf("ht_set function real time: %lld nanosecons\n", ftime);
-                    printf("time to set one pair k-v: %.2lf milliseconds\n", simple_time);
-                    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+                    printf("\n##################################################################################\n");
+                    printf("##                                                                              ##\n");
+                    printf("##                                                                              ##\n");
+                    printf("##                "_LIGHT_BLUE_" TIME DUMP [HT_SET] "_RES_"                                          ##\n");
+                    printf("##                "_LIGHT_BLUE_" ht_set function real time: "_GREEN_"%7.2lld"_LIGHT_BLUE_" milliseconds  "_RES_"            ##\n", ftime/1000000);
+                    printf("##                "_LIGHT_BLUE_" time to set one pair k-v: "_GREEN_"%8.2lf"_LIGHT_BLUE_" milliseconds "_RES_"             ##\n",simple_time);
+                    printf("##                                                                              ##\n");
+                    printf("##                                                                              ##\n");
+                    printf("##################################################################################\n\n");
                     #else
                     fprintf(data, "%.2lf ", simple_time);
                     sleep(3);
@@ -325,31 +337,31 @@ void* hash_open(char* hash_name)
 void hash_print(DB* dbh)
     {
     //#ifdef STAT 
-        printf("##    Hash function - ");
+        printf("##    Hash function - "_BLUE_"");
     //#endif
     if (dbh -> hash == rot1333)
         {
-        printf("rot1333              ");
+        printf("rot1333              "_RES_"");
         }
     else if (dbh -> hash == murmur3_32)
         {
-        printf("murmur3_32           ");
+        printf("murmur3_32           "_RES_"");
         }
     else if (dbh -> hash == murmur2_32)
         {
-        printf("murmur2_32           ");
+        printf("murmur2_32           "_RES_"");
         }
     else if (dbh -> hash == CRC32)
         {
-        printf("CRC32                ");
+        printf("CRC32                "_RES_"");
         }
     else if (dbh -> hash == FNV32)
         {
-        printf("FNV32                ");
+        printf("FNV32                "_RES_"");
         }      
     else 
         {
-        printf("NULL(error)          ");
+        printf(""_RED_"NULL(error)          "_RES_"");
         }
 
     printf("                                     ##\n");
