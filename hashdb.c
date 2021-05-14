@@ -1,7 +1,7 @@
 #include "hashdb.h"
 
-#define _DEFAULT_ -1
-#define _FREE_ 0
+#define _DEFAULT_ 1
+#define _FREE_    0
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
@@ -180,7 +180,7 @@ uint32_t murmur3_32(const uint8_t* key)
     return h;
 }
 
-uint32_t murmur2_32 (const uint8_t* /*key*/ key) 
+uint32_t murmur2_32 (const uint8_t* /*key*/ key)
 {
     const unsigned int magicConst   = 0x5bd1e995;
     const unsigned int seed         = 0;
@@ -189,10 +189,10 @@ uint32_t murmur2_32 (const uint8_t* /*key*/ key)
 
 
           unsigned int hash         = seed ^ len;
-    
+
     const unsigned char*  data      = (const unsigned char*) key;
 
-          unsigned int    symb      = 0; 
+          unsigned int    symb      = 0;
 
     while (len >= 4) {
 
@@ -211,7 +211,7 @@ uint32_t murmur2_32 (const uint8_t* /*key*/ key)
         data += 4;
         len  -= 4;
 
-    }      
+    }
 
     switch (len) {
 
@@ -252,7 +252,7 @@ uint32_t CRC32 (const uint8_t* key)
     }
     return hash;
 }
- 
+
 uint32_t FNV32 (const uint8_t *key)
     {
     uint32_t hval = 0x811c9dc5;
@@ -266,24 +266,11 @@ uint32_t FNV32 (const uint8_t *key)
     return hval;
     }
 
-//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-
-// #include <openssl/md5.h>
-/*
-  uint64_t md5hash(const char* v) {
-    unsigned char result[MD5_DIGEST_LENGTH];
-    uint64_t* k = (uint64_t*)result;
-    MD5(v, strlen(v), result);
-    return *k;
-}
-
-*/
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 int _cur_load_node(Cursor* cur) // Загрузка элемента таблицы из файла
 {
-    cur->len = 0; //текущую начальную считанную длину обнуляем
     lseek(cur->fh, cur->nodeoff, SEEK_SET); // Сместим каретку по положению cur->nodeoff отсчитывая от текущего смещения SEEK_SET
     if (read(cur->fh, &cur->node, sizeof(Node)) != sizeof(Node) )  // Если произошла ошибка с чтением
     {
@@ -298,13 +285,36 @@ int _cur_load_node(Cursor* cur) // Загрузка элемента табли�
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
-int _cur_read(Cursor* cur, off_t offset) { // Чтение элемента цепочки
+// int _cur_read_chain(Cursor* cur, off_t offset) { // Чтение элемента цепочки
+//     cur->prev = cur->chain;
+//     cur->prevoff = cur->chainoff;
+//     cur->chainoff = offset;
+//     lseek(cur->fh, cur->chainoff, SEEK_SET);
+//     if( read(cur->fh, &cur->chain, sizeof(Node)) != sizeof(Node) )  //Если произошла ошибка с чтением
+//     {
+//         error("Cannot read chain at %ld\n", cur->chainoff);
+//         return 1;
+//     }
+//     cur->len++; // увеличиваем длину цепочки, так как прочли один элемент
+//     log("Loaded node at %d: keyoff=%ld, keysz=%lu, valueoff=%ld, valuesz=%lu, next=%ld\n",
+//         cur->idx, cur->chain.keyoff, cur->chain.keysz,
+//         cur->chain.valueoff, cur->chain.valuesz, cur->chain.next);
+// }
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+int _cur_read_node(Cursor* cur, off_t offset) { // Чтение элемента цепочки
+    cur->nodeoff = offset;
     lseek(cur->fh, cur->nodeoff, SEEK_SET);
     if( read(cur->fh, &cur->node, sizeof(Node)) != sizeof(Node) )  //Если произошла ошибка с чтением
     {
-        error("Cannot read node at %ld\n", cur->nodeoff);
+        error("Cannot read chain at %ld\n", cur->nodeoff);
         return 1;
     }
+
+    log("Loaded node at %d: keyoff=%ld, keysz=%lu, valueoff=%ld, valuesz=%lu, next=%ld\n",
+        cur->idx, cur->node.keyoff, cur->node.keysz,
+        cur->node.valueoff, cur->node.valuesz, cur->node.next);
 }
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
@@ -324,12 +334,27 @@ int _cur_update_node(Cursor* cur) // Запись элемента таблиц�
     return write(cur->fh, &cur->node, sizeof(Node)) != sizeof(Node); // Запишем новое значение
 }
 
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+// int _cur_update_chain(Cursor* cur) // Запись элемента в цепочку
+// {
+//     lseek(cur->fh, cur->chainoff, SEEK_SET); // Сместим каретку на текущее смещение (именно узла элемента)
+//     return write(cur->fh, &cur->chain, sizeof(Node)) != sizeof(Node); // Запишем новое значение
+// }
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+// int _cur_update_prev(Cursor* cur) // Записать предыдущий считанный элемент, так как мы обновили текуший
+// {
+//     lseek(cur->fh, cur->prevoff, SEEK_SET);  // Сместим каретку в его положение
+//     return write(cur->fh, &cur->prev, sizeof(Node)) != sizeof(Node); // Запишем
+// }
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 int _cur_update_table(Cursor* cur) // Запись таблицы
 {
-    if ( cur->len > cur->th.len ) cur->th.len = cur->len; // Переходим
+    //if ( cur->len > cur->th.len ) cur->th.len = cur->len; // Переходим
     lseek(cur->fh, cur->tableoff, SEEK_SET);
     return write(cur->fh, &cur->th, sizeof(THeader)) != sizeof(THeader);
 }
@@ -344,7 +369,17 @@ int _cur_update_stat(Cursor* cur)  // ЗАпись статистики
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
-int _cur_cmp(Cursor* cur, const char* key) // Сравнение ключа
+// int _cur_cmp_chain(Cursor* cur, const char* key) // Сравнение ключа
+// {
+//     size_t ks = strlen(key) + 1; // Размер ключа
+//     log("Comparing key '%s' with cursor\n", key);
+//     if ( cur->chain.keysz != ks ) return 0; // Вернем 0 если размеры не равны
+//     log("Sizes %d are equal\n", ks);
+//     lseek(cur->fh, cur->chain.keyoff, SEEK_SET);
+//     return _file_cmp_block(cur->fh, key, ks);
+// }
+
+int _cur_cmp_node(Cursor* cur, const char* key) // Сравнение ключа
 {
     size_t ks = strlen(key) + 1; // Размер ключа
     log("Comparing key '%s' with cursor\n", key);
@@ -352,6 +387,14 @@ int _cur_cmp(Cursor* cur, const char* key) // Сравнение ключа
     log("Sizes %d are equal\n", ks);
     lseek(cur->fh, cur->node.keyoff, SEEK_SET);
     return _file_cmp_block(cur->fh, key, ks);
+}
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+int _cur_find(Cursor* cur, const char* key)
+{
+    if (cur->node.valueoff && _cur_cmp_node(cur,key) ) return 1;
+    return 0;
 }
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
@@ -365,36 +408,51 @@ int _cur_search(Cursor* cur, const char* key, int mode) // Поиск элеме
     cur->nodeoff = cur->tableoff + sizeof(THeader) + sizeof(Node)*cur->idx;
     _cur_load_node(cur); // Загрузим этот элемент таблицы в структуру курсора(считаем)
 
-
-    if(_cur_cmp(cur, key)) //Если нашли возвращаем 1
+    if(_cur_find(cur, key)) //Если нашли элемент на этом месте возвращаем 1
         return 1;
-  }
-
-  if  ( mode == _FREE_)
-  {
-    int NumOfIterations = 0;
-
-    while (NumOfIterations != cur->th.capacity)
-    {
-      cur->idx = ( cur->hash % cur->th.capacity + NumOfIterations ) % cur->th.capacity; // По значению хэш функции определяем индекс в таблице
-      cur->nodeoff = cur->tableoff + sizeof(THeader) + sizeof(Node)*cur->idx;
-      _cur_load_node(cur); // Загрузим этот элемент таблицы в структуру курсора(считаем)
-
-      if ( !cur->node.keyoff && _cur_cmp(cur,key))
-        return 1;
-
-      NumOfIterations++;
-    }
-
-  }
 
     if ( cur->th.next ) // Если есть следуюшая табличка, то в ней тоже ищем
-    {
-        _cur_read_table(cur, cur->th.next);
-        return _cur_search(cur, key, mode);
-    }
+        {
+            _cur_read_table(cur, cur->th.next);
+            return _cur_search(cur, key, _DEFAULT_);
+        }
+  }
+
+  // if ( mode == _FREE_ )
+  // {
+  //   while ( cur->node.keyoff)
+  //   cur->idx = cur->hash % cur->th.capacity; // По значению хэш функции определяем индекс в таблице
+  //
+  // }
+
+
+    // if ( cur->th.next ) // Если есть следуюшая табличка, то в ней тоже ищем
+    // {
+    //     _cur_read_table(cur, cur->th.next);
+    //     return _cur_search(cur, key);
+    // }
     return 0;
 }
+
+//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+// int _cur_write_chain(Cursor* cur, const char* key, const char* v) // Запись в цепочку
+// {
+//     Node new = {0};
+//     _file_append_block(cur->fh, key, &new.keyoff, &new.keysz); // Добавление нового блока для размера ключа
+//     _file_append_block(cur->fh, v, &new.valueoff, &new.valuesz); // Добавление нового блока для размера значения
+//     _file_append_node(cur->fh, &new, &cur->chain.next); // Добавление самого элемента
+//     _cur_update_chain(cur); // Добавление цепочки (самого элемента)
+//     cur->th.size ++; // Так как записали размер увеличился
+//     cur->len++;
+//     _cur_update_table(cur); // Добавление самой таблицы
+//     cur->stat->keysz += new.keysz; // Статистику тоже обновляем, увеличим на размер этого ключа размер ключей
+//     cur->stat->valuesz += new.valuesz; // Аналогично со значениями
+//     cur->stat->keys ++; // Количество ключей тоже увеличилось
+//     if (cur->stat->maxlen < cur->len) cur->stat->maxlen = cur->len; // Если превысили максимальную
+//     _cur_update_stat(cur); // Запись статистики
+//     return 0;
+// }
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
@@ -420,7 +478,7 @@ int _cur_set_value(Cursor* cur, const char* value) // Присваивает val
 {
     size_t oldsz = cur->node.valuesz;
     _file_append_block(cur->fh, value, &cur->node.valueoff, &cur->node.valuesz); // Записывает
-    _cur_update_node(cur); // Запись элемента
+    _cur_update_node(cur); // Запись в цепочку
     cur->stat->valuesz += cur->node.valuesz - oldsz; // Размер тоже изменился
     _cur_update_stat(cur); // Запись статистики
 }
@@ -430,11 +488,9 @@ int _cur_set_value(Cursor* cur, const char* value) // Присваивает val
 int _cur_del_node(Cursor* cur) // Удаление элемента (либо из цепочки лио из самой таблицы, так как если курсоро на элементе,
   // то совпадают chainoff, valueoff
 {
-  // Если удаляем сам элемент
-    {
-        cur->node.valueoff = 0;
-        _cur_update_node(cur);
-    }
+    cur->node.valueoff = 0;
+    _cur_update_node(cur);
+
     cur->th.size --;
     _cur_update_table(cur);
     cur->stat->valuesz -= cur->node.valuesz;
@@ -444,15 +500,15 @@ int _cur_del_node(Cursor* cur) // Удаление элемента (либо и
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
-int _ht_search(DB* db, Cursor* cur, const char* key, int mode) // Инициализация курсора
+int _ht_search(DB* db, Cursor* cur, const char* key) // Инициализация курсора
 {
     memset(cur, 0, sizeof(Cursor)); // Обнуление курсора
     cur->stat = &db->stat;
     cur->fh = db->fh;
-   cur->hash = db->hash(key);
-
+    cur->hash = db->hash(key);
+    //  cur->hash2 = db->hash2(key);
     _cur_read_table(cur, (off_t)sizeof(DHeader)); // Считываем саму табличку
-    return _cur_search(cur, key, mode); // Ищем с помощью курсора
+    return _cur_search(cur, key, _DEFAULT_); // Ищем с помощью курсора
 }
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
@@ -460,7 +516,7 @@ int _ht_search(DB* db, Cursor* cur, const char* key, int mode) // Инициал
 DB* ht_open(const char* filename, size_t initial_capacity, uint32_t (*hash_funk)(const uint8_t* key))  // Открытие файла базы данных
 {
     DB* dbh;
-    FILE* f = fopen(filename, "r");
+    FILE* f = fopen(filename, "r+");
     if ( f ) {
         if (_file_check_magic(fileno(f))) {
             f = freopen(NULL, "r+", f);
@@ -505,11 +561,10 @@ int ht_close(DB* db) // Закрытие файла базы данных
 int ht_set(DB* db, const char* key, const char* value)  //  Установка ассоциации (присваиваем по ключу значение)
 {
     Cursor cur;
-    if ( _ht_search(db, &cur, key, _DEFAULT_) )
+    if ( _ht_search(db, &cur, key) )
         // элемент с нужным ключом найден -- обновляем значение
         return _cur_set_value(&cur, value);
-    else
-    {
+    else {
         // элемент не найден
         if ( cur.th.nodes*100 >= cur.th.capacity*56)
         {
@@ -526,16 +581,12 @@ int ht_set(DB* db, const char* key, const char* value)  //  Установка �
         }
 
         if ( !cur.node.keyoff )
-        {
             return _cur_write_node(&cur, key, value);
-        }
-
         else
-          {
-            _ht_search( db, &cur, key, _FREE_);
-            //_cur_write_node(&cur, key, value);
-            return _cur_set_value(&cur, value);
-          }
+            printf("COLLIZION! key: %s\n", key);
+            cur.stat->collision_amount++; // счетчик коллизий
+            //printf("current collision amount : (%lu)\n", cur.stat->collision_amount);
+            //return _cur_write_chain(&cur, key, value);
     }
 }
 
@@ -544,7 +595,7 @@ int ht_set(DB* db, const char* key, const char* value)  //  Установка �
 int ht_get(DB* db, const char* key, char** value) // Получение значения по ключу
 {
     Cursor cur;
-    if ( _ht_search(db, &cur, key, _DEFAULT_) )
+    if ( _ht_search(db, &cur, key) )
     {
         *value = malloc(cur.node.valuesz);
         lseek(cur.fh, cur.node.valueoff, SEEK_SET);
@@ -567,7 +618,7 @@ int ht_get(DB* db, const char* key, char** value) // Получение знач
 int ht_del(DB* db, const char* key) // Удаление значения по ключу
 {
     Cursor cur;
-    if ( _ht_search(db, &cur, key, _DEFAULT_) )
+    if ( _ht_search(db, &cur, key) )
     {
         _cur_del_node(&cur);
         return 1;
