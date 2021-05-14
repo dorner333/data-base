@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
                         "Node fill factor: %f\n"
                         "Avg chain length: %f\n"
                         "Collision amount: %lu\n",
-                        stat.keys, 
+                        stat.keys,
                         stat.tables,
                         stat.keysz/(float)stat.keys,
                         stat.valuesz/(float)stat.keys,
@@ -237,7 +237,7 @@ int main(int argc, char* argv[])
                     #endif
                     //Рассчитываем разницу времени между двумя измерениями
                     ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
-                    simple_time = ftime / cnt; 
+                    simple_time = ftime / cnt;
                     simple_time = simple_time / 1000000; // millisecons
 
                     #ifndef STAT
@@ -268,8 +268,8 @@ int main(int argc, char* argv[])
     #ifdef STAT
     fprintf(data, "\n");
     fclose(data);
-    #endif 
-    
+    #endif
+
     return 0;
 }
 
@@ -315,7 +315,7 @@ void* hash_open(char* hash_name)
         }
     else
         {
-        printf("!ERROR! BAD INPUT HASH FUNCTION NAME\n USING murmur3_32\n");   
+        printf("!ERROR! BAD INPUT HASH FUNCTION NAME\n USING murmur3_32\n");
         hash = murmur3_32;
         }
 
@@ -324,7 +324,7 @@ void* hash_open(char* hash_name)
 
 void hash_print(DB* dbh)
     {
-    //#ifdef STAT 
+    //#ifdef STAT
         printf("##    Hash function - ");
     //#endif
     if (dbh -> hash == rot1333)
@@ -346,8 +346,8 @@ void hash_print(DB* dbh)
     else if (dbh -> hash == FNV32)
         {
         printf("FNV32                ");
-        }      
-    else 
+        }
+    else
         {
         printf("NULL(error)          ");
         }
