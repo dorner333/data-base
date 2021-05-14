@@ -177,7 +177,7 @@ uint32_t murmur3_32(const uint8_t* key)
     return h;
 }
 
-uint32_t murmur2_32 (const uint8_t* /*key*/ key) 
+uint32_t murmur2_32 (const uint8_t* /*key*/ key)
 {
     const unsigned int magicConst   = 0x5bd1e995;
     const unsigned int seed         = 0;
@@ -186,10 +186,10 @@ uint32_t murmur2_32 (const uint8_t* /*key*/ key)
 
 
           unsigned int hash         = seed ^ len;
-    
+
     const unsigned char*  data      = (const unsigned char*) key;
 
-          unsigned int    symb      = 0; 
+          unsigned int    symb      = 0;
 
     while (len >= 4) {
 
@@ -208,7 +208,7 @@ uint32_t murmur2_32 (const uint8_t* /*key*/ key)
         data += 4;
         len  -= 4;
 
-    }      
+    }
 
     switch (len) {
 
@@ -249,7 +249,7 @@ uint32_t CRC32 (const uint8_t* key)
     }
     return hash;
 }
- 
+
 uint32_t FNV32 (const uint8_t *key)
     {
     uint32_t hval = 0x811c9dc5;
@@ -263,18 +263,6 @@ uint32_t FNV32 (const uint8_t *key)
     return hval;
     }
 
-//-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-
-// #include <openssl/md5.h>
-/*
-  uint64_t md5hash(const char* v) {
-    unsigned char result[MD5_DIGEST_LENGTH];
-    uint64_t* k = (uint64_t*)result;
-    MD5(v, strlen(v), result);
-    return *k;
-}
-
-*/
 
 //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 

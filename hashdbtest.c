@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
                     #endif
                     //Рассчитываем разницу времени между двумя измерениями
                     ftime = 1000000000*(mt2.tv_sec - mt1.tv_sec)+(mt2.tv_nsec - mt1.tv_nsec);
-                    simple_time = ftime / cnt; 
+                    simple_time = ftime / cnt;
                     simple_time = simple_time / 1000000; // millisecons
 
                     #ifndef STAT
@@ -280,8 +280,8 @@ int main(int argc, char* argv[])
     #ifdef STAT
     fprintf(data, "\n");
     fclose(data);
-    #endif 
-    
+    #endif
+
     return 0;
 }
 
@@ -327,7 +327,7 @@ void* hash_open(char* hash_name)
         }
     else
         {
-        printf("!ERROR! BAD INPUT HASH FUNCTION NAME\n USING murmur3_32\n");   
+        printf("!ERROR! BAD INPUT HASH FUNCTION NAME\n USING murmur3_32\n");
         hash = murmur3_32;
         }
 
