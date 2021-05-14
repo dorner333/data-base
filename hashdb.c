@@ -576,7 +576,7 @@ int ht_set(DB* db, const char* key, const char* value)  //  Установка �
             _cur_update_stat(&cur);
             _cur_update_table(&cur);
             _cur_read_table(&cur, cur.th.next);
-            _cur_search(&cur, key, _FREE_);
+            _cur_search(&cur, key, _DEFAULT_);
             error("DONE\n");
         }
 
