@@ -356,7 +356,7 @@ int _cur_search(Cursor* cur, const char* key, int mode) // Поиск элеме
 
     while ( NumOfIterations < cur->th.capacity)
     {
-      NumOfIterations++;
+
 
       cur->idx = ( cur->hash + NumOfIterations ) % cur->th.capacity; // По значению хэш функции определяем индекс в таблице
       log("Searching for key %s at table %ld idx %u\n", key, cur->tableoff, cur->idx);
@@ -374,6 +374,8 @@ int _cur_search(Cursor* cur, const char* key, int mode) // Поиск элеме
       if ( _cur_find_free(cur, key) )
         return 1;
       }
+	    
+      NumOfIterations++;
     }
 
 
