@@ -113,8 +113,8 @@ Collision amount: 379
 ## Тесты на производительность
 
 <tr>
-    <td> <img src="" alt="Drawing" style="width: 250px;"/> </td>
-    <td> <img src="" alt="Drawing" style="width: 250px;"/> </td>
+    <td> <img src="https://github.com/ksartamonov/data-base/blob/start/pictures/callgrind_out_1.png" alt="Drawing" style="width: 250px;"/> </td>
+    <td> <img src="https://github.com/ksartamonov/data-base/blob/start/pictures/callgrind_out_2.png" alt="Drawing" style="width: 250px;"/> </td>
 </tr>
 
 ![Профилирование](https://github.com/ksartamonov/data-base/blob/stat/pictures/testing.png)
