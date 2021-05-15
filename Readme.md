@@ -112,6 +112,11 @@ Collision amount: 379
 ```
 ## Тесты на производительность
 
+<tr>
+    <td> <img src="" alt="Drawing" style="width: 250px;"/> </td>
+    <td> <img src="" alt="Drawing" style="width: 250px;"/> </td>
+</tr>
+
 ![Профилирование](https://github.com/ksartamonov/data-base/blob/stat/pictures/testing.png)
 
 Построим график зависимости времени вставки от количества ключей в базе. Как видно, в приближении время вставки пропорционально количеству ключей.
