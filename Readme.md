@@ -112,11 +112,8 @@ Collision amount: 379
 ```
 ## Тесты на производительность
 
-![Профилирование1](https://github.com/ksartamonov/data-base/blob/start/pictures/callgrind_out_1.png)
+![Профилирование1](https://github.com/ksartamonov/data-base/blob/start/pictures/callgrind_out.png)
 ![Профилирование2](https://github.com/ksartamonov/data-base/blob/start/pictures/callgrind_out_2.png)
-![Профилирование3](https://github.com/ksartamonov/data-base/blob/start/pictures/callgrind_out_3.png)
-![Профилирование4](https://github.com/ksartamonov/data-base/blob/start/pictures/callgrind_out_4.png)
-![Профилирование5](https://github.com/ksartamonov/data-base/blob/start/pictures/callgrind_out_5.png)
 
 Построим график зависимости времени вставки от количества ключей в базе. Как видно, в приближении время вставки пропорционально количеству ключей.
 
