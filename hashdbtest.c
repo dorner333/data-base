@@ -20,10 +20,14 @@
 int main(int argc, char* argv[])
 {
     DB* dbh;
+
+
     char buf[4096] = {};
     long long ftime = 0;
     double simple_time = 0;
 
+    //FILE* command = fopen("instruction.txt", "a");
+    //fgets(buf, 4096, command);
     #ifdef STAT
     FILE* data = fopen("data.txt", "a");
     #endif
@@ -191,7 +195,7 @@ int main(int argc, char* argv[])
                            "\tNode fill factor: "_GREEN_"%f"_RES_"\n"
                            "\tAvg chain length: "_GREEN_"%f"_RES_"\n"
                            "\tCollision amount: "_GREEN_"%lu"_RES_"\n\n",
-                        stat.keys, 
+                        stat.keys,
                         stat.tables,
                         stat.keysz/(float)stat.keys,
                         stat.valuesz/(float)stat.keys,
@@ -274,6 +278,7 @@ int main(int argc, char* argv[])
                 printf("unknown command\n");
             }
         }
+        //fclose(command);
     }
     ht_close(dbh);
 
@@ -336,7 +341,7 @@ void* hash_open(char* hash_name)
 
 void hash_print(DB* dbh)
     {
-    //#ifdef STAT 
+    //#ifdef STAT
         printf("##    Hash function - "_BLUE_"");
     //#endif
     if (dbh -> hash == rot1333)
@@ -358,8 +363,8 @@ void hash_print(DB* dbh)
     else if (dbh -> hash == FNV32)
         {
         printf("FNV32                "_RES_"");
-        }      
-    else 
+        }
+    else
         {
         printf(""_RED_"NULL(error)          "_RES_"");
         }

@@ -1,21 +1,15 @@
-all:
+all: bin/tcp-echo-server
+
+install: bin/tcp-echo-server
+	cp bin/tcp-echo-server /bin/
+
+bin/tcp-echo-server: tcp-echo-server.c
+	cc tcp-echo-server.c -o bin/tcp-echo-server
+
+ht:
 	gcc -c hashdb.c
 	gcc -c hashdbtest.c
 	gcc -o hashdbtest hashdbtest.o hashdb.o
-
-test1:
-	gcc -c hashdb.c
-	gcc -c test1.c
-	gcc -o test1 test1.o hashdb.o
-
-Ofast:
-	gcc -ftime-report -Ofast -c -o hashdb.o hashdb.c
-	gcc -ftime-report -Ofast -c -o hashdbtest.o hashdbtest.c
-	gcc -Ofast -o hashdbtest hashdbtest.o hashdb.o
-
-profile:
-	gcc -ftime-report -Ofast -c -o hashdb.o hashdb.c
-	gcc -ftime-report -Ofast -c -o hashdbtest.o hashdbtest.c
-	gcc -Ofast -o hashdbtest hashdbtest.o hashdb.o
-	valgrind --tool=callgrind ./hashdbtest test
-
+	
+clean:
+	rm bin/*
